@@ -1,11 +1,11 @@
 import React, { memo } from 'react';
 
-const GameObjectComponent = ({ objects, ownObjectId, map, id }) => (
+const GameObjectComponent = ({ objects, id, map, objectId }) => (
   <mesh
     ref={(ref) => {
-      if (!objects.current[id]) {
+      if (!objects.current[objectId]) {
         // eslint-disable-next-line no-param-reassign
-        objects.current[id] = {
+        objects.current[objectId] = {
           backendPosition: { x: 0, y: 0, z: 1 },
           backendQuaternion: [0, 0, 0, 1],
           elref: ref,
@@ -20,7 +20,7 @@ const GameObjectComponent = ({ objects, ownObjectId, map, id }) => (
       ]}
     />
     <meshBasicMaterial
-      color={id === ownObjectId ? 'orange' : null}
+      color={objectId === id ? 'orange' : null}
       transparent
       map={map}
     />

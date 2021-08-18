@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { io } from 'socket.io-client';
 import App from './App';
 import './styles.css';
+import connect from './connection/connection';
 
-const socket = io('ws://localhost:3300');
+const { id, channel, relaySocket } = connect();
 
 ReactDOM.render(
   <React.StrictMode>
-    <App socket={socket} />
+    <App id={id} channel={channel} socket={relaySocket} />
   </React.StrictMode>,
   document.getElementById('root'),
 );

@@ -1,7 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
 import theme from '../../../../theme';
-import addSocketListener from '../../../../events/socketEventsForUI';
 import appContext from '../../../../context/appContext';
 
 const Avatar = styled.img`
@@ -54,13 +53,7 @@ const Container = styled.div`
 `;
 
 export default function Chat() {
-  const { socket, ownId } = useContext(appContext);
-  const [messages, setMessages] = useState([]);
-
-  useEffect(() => {
-    const removeListener = addSocketListener({ socket, setMessages });
-    return () => removeListener();
-  }, [socket]);
+  const { messages, ownId } = useContext(appContext);
 
   return (
     <Container>

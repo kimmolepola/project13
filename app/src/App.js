@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import styled from 'styled-components';
 import Sidepanel from './components/React/Sidepanel';
 import GameContainer from './components/ThreeFiber/GameContainer';
 import AppContext from './context/appContext';
-import addSocketListener from './events/socketEventsMain';
+import setupNetworkEvents from './events/networkEvents';
 
 const AppContainer = styled.div`
   display: flex;
@@ -12,14 +12,29 @@ const AppContainer = styled.div`
   height: 100vh;
 `;
 
-export default function App({ socket }) {
-  const [ownId, setOwnId] = useState();
+export default function App({ id, channel, socket }) {
+  const [messages, setMessages] = useState([]);
+  const [sendMessage, setSendMessage] = useState();
+  const objects = useRef({});
+  const objectIds = useRef([]);
   const text = useRef({});
 
+  console.log('sendMessage:', sendMessage);
+
   useEffect(() => {
-    const removeListener = addSocketListener({ socket, setOwnId });
-    return () => removeListener();
-  }, [socket]);
+    const { removeListeners, sendMessage: sendMsg } = setupNetworkEvents({
+      id,
+      channel,
+      socket,
+      objectIds,
+      objects,
+    });
+    console.log('sendMsg', sendMsg);
+    setSendMessage(sendMsg);
+    return () => {
+      removeListeners();
+    };
+  }, []);
 
   return (
     <AppContainer>
@@ -34,9 +49,18 @@ export default function App({ socket }) {
           position: [0, 0, 10],
         }}
       >
-        <GameContainer ownObjectId={ownId} text={text} socket={socket} />
+        <GameContainer
+          id={id}
+          channel={channel}
+          socket={socket}
+          objectIds={objectIds}
+          objects={objects}
+          text={text}
+        />
       </Canvas>
-      <AppContext.Provider value={{ ownId, socket }}>
+      <AppContext.Provider
+        value={{ messages, sendMessage, id, channel, socket }}
+      >
         <Sidepanel />
         <div ref={text} style={{ position: 'absolute', left: 40, top: 40 }}>
           hello

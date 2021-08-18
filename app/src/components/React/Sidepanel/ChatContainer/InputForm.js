@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import theme from '../../../../theme';
 import appContext from '../../../../context/appContext';
-import { sendChatComment } from '../../../../events/socketEventsForUI';
 
 const Container = styled.div``;
 
@@ -36,14 +35,15 @@ const InputForm = styled.form`
 `;
 
 export default function ChatInputForm() {
-  const { socket } = useContext(appContext);
   const [inputValue, setInputValue] = useState('');
+  const { sendMessage } = useContext(appContext);
+
   return (
     <Container>
       <InputForm
         onSubmit={(e) => {
           e.preventDefault();
-          sendChatComment({ socket, message: inputValue });
+          sendMessage(inputValue);
           setInputValue('');
         }}
         noValidate

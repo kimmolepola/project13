@@ -4,7 +4,7 @@ import { TextureLoader } from 'three/src/loaders/TextureLoader';
 import GameObject from './Objects/GameObject';
 import Background from './Objects/Background';
 
-export default function Objects({ ownObjectId, allObjectIds, objects }) {
+export default function Objects({ id, objectIds, objects }) {
   const [fighterImage, image1] = useLoader(TextureLoader, [
     'fighter.png',
     'image1.jpeg',
@@ -13,12 +13,12 @@ export default function Objects({ ownObjectId, allObjectIds, objects }) {
   return (
     <>
       <Background map={image1} />
-      {allObjectIds.map((x) => (
+      {objectIds.current.map((x) => (
         <GameObject
           objects={objects}
-          ownObjectId={ownObjectId}
+          id={id}
           map={fighterImage}
-          id={x}
+          objectId={x}
           key={x}
         />
       ))}

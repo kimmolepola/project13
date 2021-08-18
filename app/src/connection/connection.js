@@ -10,90 +10,60 @@
 
 import adapter from 'webrtc-adapter'; // eslint-disable-line import/no-unresolved
 import { io } from 'socket.io-client';
-import stunServers from './stunServers';
-import { parseIceUfrag } from '../utils';
+import iceServers from './iceServers';
 
-const main = () => {
+const connect = () => {
   const socket = io(process.env.REACT_APP_SIGNALING_SERVER);
 
-  socket.on('connect', () => console.log('signaling server socket connected'));
-  socket.on('disconnect', () =>
-    console.log('signaling server socket disconnected'),
-  );
+  socket.on('connect', () => console.log('signaling socket connected'));
+  socket.on('disconnect', () => console.log('signaling socket disconnected'));
 
+  let id;
   let pc;
   let channel;
   let relaySocket;
 
-  const handleFailed = () => {
-    console.log('failed, attempting relay connection');
-    console.log('ice failed');
+  const handleFailed = (remoteId) => {
     relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
-    relaySocket.on('relayState', (state) => {
-      console.log('relay state:', state);
-      if (state === 'ready') {
-        console.log('relay connection ready');
-      }
-    });
     relaySocket.on('relay', (arg) => {
       console.log('received relayed data:', arg);
     });
     relaySocket.on('connect', () => {
-      console.log('relay server socket connected');
+      console.log('relay socket connected');
       relaySocket.emit('peerIds', {
-        localId: parseIceUfrag(pc.localDescription.sdp),
-        remoteId: parseIceUfrag(pc.remoteDescription.sdp),
+        localId: id,
+        remoteId,
       });
     });
-    relaySocket.on('disconnect', () =>
-      console.log('signaling server socket disconnected'),
-    );
   };
 
-  function start() {
-    pc = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: (() => {
-            const fourServers = [];
-            for (let i = 0; i < 20; i += 1) {
-              fourServers.push(
-                `stun:${
-                  stunServers()[
-                    Math.floor(Math.random() * stunServers().length)
-                  ]
-                }`,
-              );
-            }
-            return fourServers;
-          })(),
-        },
-      ],
-    });
+  function start(remoteId) {
+    pc = new RTCPeerConnection({ iceServers });
 
-    console.log(pc.connectionState);
     pc.onconnectionstatechange = () => {
-      console.log(pc.connectionState);
       if (pc.connectionState === 'failed') {
-        handleFailed();
+        console.log('ice failed');
+        handleFailed(remoteId);
       }
-      console.log(pc.connectionState);
     };
 
     pc.onicecandidate = ({ candidate }) => {
-      socket.emit('signaling', { candidate });
+      socket.emit('signaling', { remoteId, candidate });
     };
 
     pc.onnegotiationneeded = async () => {
       try {
         await pc.setLocalDescription();
-        socket.emit('signaling', { description: pc.localDescription });
+        socket.emit('signaling', {
+          remoteId,
+          description: pc.localDescription,
+        });
       } catch (err) {
         console.error(err);
       }
     };
 
-    channel = pc.createDataChannel('chat', { negotiated: true, id: 0 });
+    channel = pc.createDataChannel('dataChannel', { negotiated: true, id: 0 });
     channel.onopen = () => {
       console.log('dataChannel open');
     };
@@ -102,15 +72,26 @@ const main = () => {
     };
   }
 
-  socket.on('signaling', async ({ description, candidate }) => {
-    if (!pc) start();
+  socket.on('init', (arg) => {
+    id = arg;
+    if (id !== 'main') {
+      start('main');
+    }
+  });
+
+  socket.on('signaling', async ({ id: remoteId, description, candidate }) => {
+    if (!pc) start(remoteId);
 
     try {
       if (description) {
         await pc.setRemoteDescription(description);
-        if (description.type == 'offer') { // eslint-disable-line
+        console.log('description:', description);
+        if (description.type === 'offer') {
           await pc.setLocalDescription();
-          socket.emit('signaling', { description: pc.localDescription });
+          socket.emit('signaling', {
+            remoteId,
+            description: pc.localDescription,
+          });
         }
       } else if (candidate) {
         await pc.addIceCandidate(candidate);
@@ -119,9 +100,10 @@ const main = () => {
       console.error(err);
     }
   });
+  return { id, channel, relaySocket };
 };
 
-export default main;
+export default connect;
 
 /*
     sendButton.onclick = () => {

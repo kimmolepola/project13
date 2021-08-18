@@ -1,56 +1,23 @@
 import React, { useRef, useEffect, Suspense, useState } from 'react';
 import Objects from './Objects';
-import addKeyboardEventListeners from '../../events/keyboardEvents';
-import addSocketEventListeners from '../../events/socketEventsForGame';
+import addKeyboardListeners from '../../events/keyboardEvents';
 import Loop from './Loop';
 
-const GameContainer = ({ ownObjectId, text, socket }) => {
-  const objects = useRef({});
-  const [allObjectIds, setAllObjectIds] = useState([]);
-
+const GameContainer = ({ id, channel, socket, objectIds, objects, text }) => {
   useEffect(() => {
-    const removeKeyboardEventListeners = addKeyboardEventListeners({
-      socket,
-      objects,
-      ownObjectId,
-    });
+    const removeListeners = [
+      addKeyboardListeners({ channel, socket, objects, id }),
+    ];
     return () => {
-      removeKeyboardEventListeners();
+      removeListeners.forEach((x) => x());
     };
-  }, [socket, ownObjectId]);
+  }, []);
 
-  useEffect(() => {
-    // cleanup
-    Object.keys(objects.current).forEach((x) => {
-      if (!allObjectIds.includes(x)) {
-        delete objects.current[x];
-      }
-    });
-    //
-    const removeSocketEventListeners = addSocketEventListeners({
-      socket,
-      objects,
-      allObjectIds,
-      setAllObjectIds,
-    });
-    return () => {
-      removeSocketEventListeners();
-    };
-  }, [socket, ownObjectId, allObjectIds]);
   return (
     <>
-      <Loop
-        text={text}
-        ownObjectId={ownObjectId}
-        allObjectIds={allObjectIds}
-        objects={objects}
-      />
+      <Loop text={text} id={id} objectIds={objectIds} objects={objects} />
       <Suspense fallback={null}>
-        <Objects
-          ownObjectId={ownObjectId}
-          allObjectIds={allObjectIds}
-          objects={objects}
-        />
+        <Objects id={id} objectIds={objectIds} objects={objects} />
       </Suspense>
     </>
   );

@@ -1,8 +1,7 @@
 require('dotenv').config();
 const io = require('socket.io')({
   cors: {
-    origin: 'http://localhost:3000',
-    // origin: "https://project13-app.herokuapp.com",
+    origin: process.env.CORS_ORIGIN,
     methods: ['GET', 'POST'],
   },
 });
@@ -11,16 +10,18 @@ const clients = {};
 
 io.on('connection', (socket) => {
   console.log('connected:', socket.id);
-  const id = Math.random();
+  const id = Object.keys(clients).length ? Math.random() : 'main';
   clients[id] = socket;
 
-  socket.emit('init', { id, first: Object.keys().length === 1 });
+  socket.emit('init', id);
 
-  socket.on('signaling', ({ id: remoteId, message }) => {
+  socket.on('signaling', ({ remoteId, description, candidate }) => {
     if (clients[remoteId]) {
-      clients[remoteId].emit('signaling', message);
-    } else {
-      socket.emit('message', 'no other connection');
+      clients[remoteId].emit('signaling', {
+        id,
+        description,
+        candidate,
+      });
     }
   });
 

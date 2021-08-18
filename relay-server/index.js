@@ -2,8 +2,7 @@ require('dotenv').config();
 
 const options = {
   cors: {
-    origin: 'http://localhost:3000',
-    // origin: "https://project13-app.herokuapp.com",
+    origin: process.env.CORS_ORIGIN,
     methods: ['GET', 'POST'],
   },
 };

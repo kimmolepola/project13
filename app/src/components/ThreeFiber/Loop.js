@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { radiansToDegrees } from '../../utils';
 import { interpolationAlpha } from '../../parameters';
 
-const loop = ({ text, ownObjectId, allObjectIds, objects }) => {
+const loop = ({ text, id, objectIds, objects }) => {
   const qua = new Quaternion();
   let next = Date.now();
 
@@ -29,9 +29,9 @@ const loop = ({ text, ownObjectId, allObjectIds, objects }) => {
   };
 
   const handleObjects = (delta) => {
-    for (let i = allObjectIds.length - 1; i > -1; i -= 1) {
-      if (allObjectIds[i] && objects.current[allObjectIds[i]]) {
-        const o = objects.current[allObjectIds[i]];
+    for (let i = objectIds.length - 1; i > -1; i -= 1) {
+      if (objectIds[i] && objects.current[objectIds[i]]) {
+        const o = objects.current[objectIds[i]];
         o.elref.position.lerp(o.backendPosition, interpolationAlpha);
         o.elref.quaternion.slerp(
           qua.fromArray(o.backendQuaternion),
@@ -47,9 +47,7 @@ const loop = ({ text, ownObjectId, allObjectIds, objects }) => {
       // console.log('all ids:', allObjectIds);
       // console.log('all objects:', Object.keys(objects.current));
     }
-    const ownRef = objects.current[ownObjectId]
-      ? objects.current[ownObjectId].elref
-      : undefined;
+    const ownRef = objects.current[id] ? objects.current[id].elref : undefined;
 
     handleObjects(delta);
     if (ownRef && ownRef.position) {
