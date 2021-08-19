@@ -7,15 +7,26 @@ const io = require('socket.io')({
 });
 
 const clients = {};
+let main = null;
 
 io.on('connection', (socket) => {
   console.log('connected:', socket.id);
-  const id = Object.keys(clients).length ? Math.random() : 'main';
+  const id = Math.random().toString();
   clients[id] = socket;
+  console.log(Object.keys(clients));
 
   socket.emit('init', id);
 
-  socket.on('signaling', ({ remoteId, description, candidate }) => {
+  if (!main) {
+    main = id;
+    socket.emit('main');
+  } else {
+    socket.emit('connectToMain', main);
+  }
+
+  const signaling = ({ remoteId, description, candidate }) => {
+    console.log('signaling, remoteId:', remoteId);
+    console.log('clients keys:', Object.keys(clients));
     if (clients[remoteId]) {
       clients[remoteId].emit('signaling', {
         id,
@@ -23,12 +34,28 @@ io.on('connection', (socket) => {
         candidate,
       });
     }
-  });
+  };
 
-  socket.on('disconnect', (message) => {
+  const disconnect = () => {
+    socket.broadcast.emit('peerDisconnect', id);
+    console.log('disconnect,', id, 'main:', main);
     delete clients[id];
-    console.log('disconnect,', message);
-  });
+    if (main === id) {
+      console.log('main === id');
+      main = null;
+      Object.keys(clients).forEach((x) => {
+        if (main === null) {
+          main = x;
+          clients[x].emit('main');
+        } else {
+          clients[x].emit('connectToMain', main);
+        }
+      });
+    }
+  };
+
+  socket.on('signaling', signaling);
+  socket.on('disconnect', disconnect);
 });
 
 io.listen(process.env.PORT);

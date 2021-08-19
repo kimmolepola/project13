@@ -12,33 +12,31 @@ import adapter from 'webrtc-adapter'; // eslint-disable-line import/no-unresolve
 import { io } from 'socket.io-client';
 import iceServers from './iceServers';
 
-const connect = () => {
+const connect = ({ setId, setRemotes }) => {
   const socket = io(process.env.REACT_APP_SIGNALING_SERVER);
 
   socket.on('connect', () => console.log('signaling socket connected'));
   socket.on('disconnect', () => console.log('signaling socket disconnected'));
 
-  let id;
-  let pc;
-  let channel;
+  let main;
+  const remotes = {};
   let relaySocket;
 
   const handleFailed = (remoteId) => {
-    relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
-    relaySocket.on('relay', (arg) => {
-      console.log('received relayed data:', arg);
-    });
+    console.log('using relay connection');
+    if (!relaySocket) {
+      relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
+      relaySocket.emit('main', main);
+    }
     relaySocket.on('connect', () => {
       console.log('relay socket connected');
-      relaySocket.emit('peerIds', {
-        localId: id,
-        remoteId,
-      });
     });
+    remotes[remoteId].relaySocket = relaySocket;
+    setRemotes(remotes);
   };
 
-  function start(remoteId) {
-    pc = new RTCPeerConnection({ iceServers });
+  const start = (remoteId) => {
+    const pc = new RTCPeerConnection({ iceServers });
 
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'failed') {
@@ -54,6 +52,7 @@ const connect = () => {
     pc.onnegotiationneeded = async () => {
       try {
         await pc.setLocalDescription();
+        console.log('signaling');
         socket.emit('signaling', {
           remoteId,
           description: pc.localDescription,
@@ -63,24 +62,54 @@ const connect = () => {
       }
     };
 
-    channel = pc.createDataChannel('dataChannel', { negotiated: true, id: 0 });
+    const channel = pc.createDataChannel('dataChannel', {
+      negotiated: true,
+      id: 0,
+    });
+
+    console.log('channel:', channel.readyState);
+
     channel.onopen = () => {
       console.log('dataChannel open');
     };
+
     channel.onmessage = ({ data }) => {
       console.log('received dataChannel data:', data);
     };
-  }
 
-  socket.on('init', (arg) => {
-    id = arg;
-    if (id !== 'main') {
-      start('main');
+    remotes[remoteId] = { pc, channel };
+    setRemotes(remotes);
+  };
+
+  socket.on('peerDisconnect', (remoteId) => {
+    if (remotes[remoteId]) remotes[remoteId].pc.close();
+    delete remotes[remoteId];
+    if (relaySocket && !Object.keys(remotes).find((x) => x.relaySocket)) {
+      relaySocket.disconnect();
+      relaySocket = undefined;
     }
+    setRemotes(remotes);
+  });
+
+  socket.on('connectToMain', (remoteId) => {
+    console.log('start connect to main', remoteId);
+    start(remoteId);
+  });
+
+  socket.on('main', () => {
+    main = true;
+    if (relaySocket) relaySocket.emit('main', main);
+    console.log('you are main');
+  });
+
+  socket.on('init', (id) => {
+    setId(id);
   });
 
   socket.on('signaling', async ({ id: remoteId, description, candidate }) => {
-    if (!pc) start(remoteId);
+    console.log('signaling received');
+    if (!remotes[remoteId]) start(remoteId);
+    const { pc } = remotes[remoteId];
 
     try {
       if (description) {
@@ -100,7 +129,6 @@ const connect = () => {
       console.error(err);
     }
   });
-  return { id, channel, relaySocket };
 };
 
 export default connect;

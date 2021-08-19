@@ -1,21 +1,43 @@
-const setupNetworkEvents = ({ id, channel, socket, objectIds, objects }) => {
-  const sendMessage = (message) => {
-    console.log('sending not implemented yet', message);
-  };
+const setupNetworkEvents = ({ id, remotes, objectIds, objects }) => {
+  const rtcConnections = [];
+
   const receiveMessage = ({ data }) => {
-    console.log('network message:', data);
+    console.log('received message:', data);
   };
-  if (channel) {
-    channel.onmessage = receiveMessage; // eslint-disable-line no-param-reassign
-  }
-  if (socket) {
-    socket.on('message', receiveMessage);
-  }
-  const removeListeners = () => {
-    if (socket) {
-      socket.off('message', receiveMessage);
+
+  let relay;
+  Object.keys(remotes).forEach((x) => {
+    if (remotes[x].channel.readyState === 'open') {
+      rtcConnections.push(x);
+      // eslint-disable-next-line no-param-reassign
+      remotes[x].channel.onmessage = receiveMessage;
+    } else if (remotes[x].relaySocket) {
+      console.log('relay1:', relay);
+      if (!relay) {
+        remotes[x].relaySocket.on('message', receiveMessage);
+        relay = remotes[x].relaySocket;
+        console.log('relay2:', relay);
+      }
     }
+  });
+
+  const removeListeners = () => {
+    if (relay) relay.off('message', receiveMessage);
   };
+
+  const sendMessage = (message) => {
+    console.log(
+      'sending message',
+      message,
+      'rtc length',
+      rtcConnections.length,
+      'relay',
+      relay,
+    );
+    rtcConnections.forEach((x) => remotes[x].channel.send(message));
+    if (relay) relay.emit('message', message);
+  };
+
   return { sendMessage, removeListeners };
 };
 

@@ -5,6 +5,7 @@ import Sidepanel from './components/React/Sidepanel';
 import GameContainer from './components/ThreeFiber/GameContainer';
 import AppContext from './context/appContext';
 import setupNetworkEvents from './events/networkEvents';
+import connect from './connection/connection';
 
 const AppContainer = styled.div`
   display: flex;
@@ -12,29 +13,31 @@ const AppContainer = styled.div`
   height: 100vh;
 `;
 
-export default function App({ id, channel, socket }) {
+export default function App() {
+  const [id, setId] = useState({});
+  const [remotes, setRemotes] = useState({});
   const [messages, setMessages] = useState([]);
   const [sendMessage, setSendMessage] = useState();
   const objects = useRef({});
   const objectIds = useRef([]);
   const text = useRef({});
 
-  console.log('sendMessage:', sendMessage);
+  useEffect(() => {
+    connect({ setId, setRemotes });
+  }, []);
 
   useEffect(() => {
     const { removeListeners, sendMessage: sendMsg } = setupNetworkEvents({
       id,
-      channel,
-      socket,
+      remotes,
       objectIds,
       objects,
     });
-    console.log('sendMsg', sendMsg);
-    setSendMessage(sendMsg);
+    setSendMessage(() => sendMsg);
     return () => {
       removeListeners();
     };
-  }, []);
+  }, [id, remotes]);
 
   return (
     <AppContainer>
@@ -51,16 +54,13 @@ export default function App({ id, channel, socket }) {
       >
         <GameContainer
           id={id}
-          channel={channel}
-          socket={socket}
+          remotes={remotes}
           objectIds={objectIds}
           objects={objects}
           text={text}
         />
       </Canvas>
-      <AppContext.Provider
-        value={{ messages, sendMessage, id, channel, socket }}
-      >
+      <AppContext.Provider value={{ messages, sendMessage, id, remotes }}>
         <Sidepanel />
         <div ref={text} style={{ position: 'absolute', left: 40, top: 40 }}>
           hello

@@ -1,6 +1,6 @@
 const validKeys = ['ArrowLeft', 'ArrowRight'];
 
-const subscribeToKeyboardEvents = ({ channel, socket, objects, id }) => {
+const subscribeToKeyboardEvents = ({ remotes, objects, id }) => {
   const handleKeyUp = (e) => {
     const key = e.code;
     if (validKeys.includes(e.code)) {
@@ -11,7 +11,7 @@ const subscribeToKeyboardEvents = ({ channel, socket, objects, id }) => {
           keyDowns.splice(index, 1);
         }
       }
-      socket.emit('keyup', key);
+      //      socket.emit('keyup', key);
     }
   };
 
@@ -25,7 +25,7 @@ const subscribeToKeyboardEvents = ({ channel, socket, objects, id }) => {
       if (!objects.current[id].keyDowns.includes(key)) {
         objects.current[id].keyDowns.push(key);
       }
-      socket.emit('keydown', key);
+      // socket.emit('keydown', key);
     }
   };
   document.addEventListener('keyup', handleKeyUp);
