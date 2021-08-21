@@ -1,47 +1,20 @@
-const setupNetworkEvents = ({ id, remotes, objectIds, objects }) => {
-  const rtcConnections = [];
+import { chatMessageTimeToLiveSeconds } from '../parameters';
 
-  const receiveMessage = ({ data }) => {
-    console.log('received message:', data);
-  };
-
-  let relay;
-  Object.keys(remotes).forEach((x) => {
-    if (remotes[x].channel.readyState === 'open') {
-      rtcConnections.push(x);
-      // eslint-disable-next-line no-param-reassign
-      remotes[x].channel.onmessage = receiveMessage;
-    } else if (remotes[x].relaySocket) {
-      console.log('relay1:', relay);
-      if (!relay) {
-        remotes[x].relaySocket.on('message', receiveMessage);
-        relay = remotes[x].relaySocket;
-        console.log('relay2:', relay);
-      }
-    }
-  });
-
-  const removeListeners = () => {
-    if (relay) relay.off('message', receiveMessage);
-  };
-
-  const sendMessage = (message) => {
-    console.log(
-      'sending message',
-      message,
-      'rtc length',
-      rtcConnections.length,
-      'relay',
-      relay,
-    );
-    rtcConnections.forEach((x) => remotes[x].channel.send(message));
-    if (relay) relay.emit('message', message);
-  };
-
-  return { sendMessage, removeListeners };
+export const receiveMessage = (msg, setMessages) => {
+  console.log('received message:', msg);
+  setMessages((x) => [msg, ...x]);
+  setTimeout(
+    () => setMessages((x) => x.filter((xx) => xx !== msg)),
+    chatMessageTimeToLiveSeconds * 1000,
+  );
 };
 
-export default setupNetworkEvents;
+export const sendMessage = (message, id, channels, relay) => {
+  const msg = { messageId: Math.random().toString(), userId: id, message };
+  console.log('sending message', message);
+  channels.forEach((x) => x.send(msg));
+  if (relay) relay.emit('message', msg);
+};
 
 /*
 const subscribeToSocketEventsForGame = ({

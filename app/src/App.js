@@ -14,30 +14,19 @@ const AppContainer = styled.div`
 `;
 
 export default function App() {
+  const [main, setMain] = useState([]);
+  const [channels, setChannels] = useState([]);
+  const [relay, setRelay] = useState();
   const [id, setId] = useState({});
   const [remotes, setRemotes] = useState({});
   const [messages, setMessages] = useState([]);
-  const [sendMessage, setSendMessage] = useState();
   const objects = useRef({});
   const objectIds = useRef([]);
   const text = useRef({});
 
   useEffect(() => {
-    connect({ setId, setRemotes });
+    connect({ setMessages, setMain, setChannels, setRelay, setId, setRemotes });
   }, []);
-
-  useEffect(() => {
-    const { removeListeners, sendMessage: sendMsg } = setupNetworkEvents({
-      id,
-      remotes,
-      objectIds,
-      objects,
-    });
-    setSendMessage(() => sendMsg);
-    return () => {
-      removeListeners();
-    };
-  }, [id, remotes]);
 
   return (
     <AppContainer>
@@ -60,7 +49,7 @@ export default function App() {
           text={text}
         />
       </Canvas>
-      <AppContext.Provider value={{ messages, sendMessage, id, remotes }}>
+      <AppContext.Provider value={{ messages, channels, relay, id, remotes }}>
         <Sidepanel />
         <div ref={text} style={{ position: 'absolute', left: 40, top: 40 }}>
           hello

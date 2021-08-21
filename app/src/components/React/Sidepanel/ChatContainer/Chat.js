@@ -57,6 +57,7 @@ export default function Chat() {
 
   return (
     <Container>
+      {console.log('messagess---:', messages)}
       {messages.map((x, index) => (
         <div key={x.messageId}>
           <Divider

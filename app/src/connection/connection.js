@@ -11,28 +11,41 @@
 import adapter from 'webrtc-adapter'; // eslint-disable-line import/no-unresolved
 import { io } from 'socket.io-client';
 import iceServers from './iceServers';
+import { receiveMessage } from '../events/networkEvents';
 
-const connect = ({ setId, setRemotes }) => {
+const connect = ({
+  setMessages,
+  setMain,
+  setChannels,
+  setRelay,
+  setId,
+  setRemotes,
+}) => {
   const socket = io(process.env.REACT_APP_SIGNALING_SERVER);
 
   socket.on('connect', () => console.log('signaling socket connected'));
   socket.on('disconnect', () => console.log('signaling socket disconnected'));
 
-  let main;
-  const remotes = {};
-  let relaySocket;
-
   const handleFailed = (remoteId) => {
     console.log('using relay connection');
-    if (!relaySocket) {
-      relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
-      relaySocket.emit('main', main);
-    }
-    relaySocket.on('connect', () => {
-      console.log('relay socket connected');
+    let main = false;
+    setMain((x) => {
+      main = x;
+      return x;
     });
-    remotes[remoteId].relaySocket = relaySocket;
-    setRemotes(remotes);
+    setRelay((x) => {
+      if (!x) {
+        const relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
+        relaySocket.on('message', (arg) => receiveMessage(arg, setMessages));
+        relaySocket.emit('main', main);
+        return relaySocket;
+      }
+      return x;
+    });
+    setRemotes((x) => ({
+      ...x,
+      [remoteId]: { ...x[remoteId], relaySocket: true },
+    }));
   };
 
   const start = (remoteId) => {
@@ -69,26 +82,44 @@ const connect = ({ setId, setRemotes }) => {
 
     console.log('channel:', channel.readyState);
 
+    channel.onclose = () => {
+      setChannels((x) => x.filter((xx) => xx !== channel));
+      console.log('dataChannel closed');
+    };
+
     channel.onopen = () => {
+      setChannels((x) => [...x, channel]);
       console.log('dataChannel open');
     };
 
     channel.onmessage = ({ data }) => {
-      console.log('received dataChannel data:', data);
+      console.log('data', data);
+      receiveMessage(data, setMessages);
     };
 
-    remotes[remoteId] = { pc, channel };
-    setRemotes(remotes);
+    let newRemotes;
+    setRemotes((x) => {
+      newRemotes = { ...x, [remoteId]: { pc, channel } };
+      return newRemotes;
+    });
+    return newRemotes;
   };
 
   socket.on('peerDisconnect', (remoteId) => {
-    if (remotes[remoteId]) remotes[remoteId].pc.close();
-    delete remotes[remoteId];
-    if (relaySocket && !Object.keys(remotes).find((x) => x.relaySocket)) {
-      relaySocket.disconnect();
-      relaySocket = undefined;
-    }
-    setRemotes(remotes);
+    let newRemotes;
+    setRemotes((x) => {
+      if (x[remoteId]) x[remoteId].pc.close();
+      newRemotes = { ...x };
+      delete newRemotes[remoteId];
+      return newRemotes;
+    });
+    setRelay((x) => {
+      if (x && !Object.keys(newRemotes).find((xx) => xx.relaySocket)) {
+        x.disconnect();
+        return undefined;
+      }
+      return x;
+    });
   });
 
   socket.on('connectToMain', (remoteId) => {
@@ -97,8 +128,11 @@ const connect = ({ setId, setRemotes }) => {
   });
 
   socket.on('main', () => {
-    main = true;
-    if (relaySocket) relaySocket.emit('main', main);
+    setMain(true);
+    setRelay((x) => {
+      if (x) x.emit('main', true);
+      return x;
+    });
     console.log('you are main');
   });
 
@@ -108,9 +142,15 @@ const connect = ({ setId, setRemotes }) => {
 
   socket.on('signaling', async ({ id: remoteId, description, candidate }) => {
     console.log('signaling received');
-    if (!remotes[remoteId]) start(remoteId);
+    let remotes;
+    setRemotes((x) => {
+      remotes = x;
+      return x;
+    });
+    if (!remotes[remoteId]) {
+      remotes = start(remoteId);
+    }
     const { pc } = remotes[remoteId];
-
     try {
       if (description) {
         await pc.setRemoteDescription(description);

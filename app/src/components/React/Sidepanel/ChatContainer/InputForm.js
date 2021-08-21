@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import theme from '../../../../theme';
 import appContext from '../../../../context/appContext';
+import { sendMessage } from '../../../../events/networkEvents';
 
 const Container = styled.div``;
 
@@ -36,14 +37,14 @@ const InputForm = styled.form`
 
 export default function ChatInputForm() {
   const [inputValue, setInputValue] = useState('');
-  const { sendMessage } = useContext(appContext);
+  const { id, channels, relay } = useContext(appContext);
 
   return (
     <Container>
       <InputForm
         onSubmit={(e) => {
           e.preventDefault();
-          sendMessage(inputValue);
+          sendMessage(inputValue, id, channels, relay);
           setInputValue('');
         }}
         noValidate
