@@ -21,7 +21,7 @@ export const sendMessage = (
   if (type === 'chat') receiveMessage(msg, setMessages);
   console.log('sending message', msg);
   const stringMsg = JSON.stringify(msg);
-  channels.forEach((x) => x.send(msg));
+  channels.forEach((x) => x.send(stringMsg));
   if (relay) relay.emit('message', msg);
 };
 
