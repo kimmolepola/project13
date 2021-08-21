@@ -9,7 +9,7 @@
 /* eslint-disable no-use-before-define, no-multi-assign */
 
 import adapter from 'webrtc-adapter'; // eslint-disable-line import/no-unresolved
-import { io } from 'socket.io-client';
+import { signaling as socket, relay as relaySocket } from '../service/sockets';
 import iceServers from './iceServers';
 import { receiveMessage } from '../events/networkEvents';
 
@@ -21,8 +21,6 @@ const connect = ({
   setId,
   setRemotes,
 }) => {
-  const socket = io(process.env.REACT_APP_SIGNALING_SERVER);
-
   socket.on('connect', () => console.log('signaling socket connected'));
   socket.on('disconnect', () => console.log('signaling socket disconnected'));
 
@@ -35,7 +33,6 @@ const connect = ({
     });
     setRelay((x) => {
       if (!x) {
-        const relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
         relaySocket.on('message', (arg) => receiveMessage(arg, setMessages));
         relaySocket.emit('main', main);
         return relaySocket;
@@ -94,7 +91,7 @@ const connect = ({
 
     channel.onmessage = ({ data }) => {
       console.log('data', data);
-      receiveMessage(data, setMessages);
+      receiveMessage(JSON.parse(data), setMessages);
     };
 
     let newRemotes;
@@ -169,6 +166,7 @@ const connect = ({
       console.error(err);
     }
   });
+  return socket;
 };
 
 export default connect;

@@ -9,9 +9,18 @@ export const receiveMessage = (msg, setMessages) => {
   );
 };
 
-export const sendMessage = (message, id, channels, relay) => {
+export const sendMessage = (
+  setMessages,
+  type,
+  message,
+  id,
+  channels,
+  relay,
+) => {
   const msg = { messageId: Math.random().toString(), userId: id, message };
-  console.log('sending message', message);
+  if (type === 'chat') receiveMessage(msg, setMessages);
+  console.log('sending message', msg);
+  const stringMsg = JSON.stringify(msg);
   channels.forEach((x) => x.send(msg));
   if (relay) relay.emit('message', msg);
 };

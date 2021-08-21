@@ -37,14 +37,14 @@ const InputForm = styled.form`
 
 export default function ChatInputForm() {
   const [inputValue, setInputValue] = useState('');
-  const { id, channels, relay } = useContext(appContext);
+  const { setMessages, id, channels, relay } = useContext(appContext);
 
   return (
     <Container>
       <InputForm
         onSubmit={(e) => {
           e.preventDefault();
-          sendMessage(inputValue, id, channels, relay);
+          sendMessage(setMessages, 'chat', inputValue, id, channels, relay);
           setInputValue('');
         }}
         noValidate

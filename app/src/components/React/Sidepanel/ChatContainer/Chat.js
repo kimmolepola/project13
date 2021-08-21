@@ -53,7 +53,7 @@ const Container = styled.div`
 `;
 
 export default function Chat() {
-  const { messages, ownId } = useContext(appContext);
+  const { messages, id } = useContext(appContext);
 
   return (
     <Container>
@@ -63,9 +63,7 @@ export default function Chat() {
           <Divider
             style={{ display: index !== messages.length - 1 ? '' : 'none' }}
           />
-          <Message
-            style={{ background: x.userId === ownId ? 'yellow' : 'none' }}
-          >
+          <Message style={{ background: x.userId === id ? 'yellow' : 'none' }}>
             <Text>
               {x.userId}: {x.message}
             </Text>

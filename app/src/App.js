@@ -25,7 +25,22 @@ export default function App() {
   const text = useRef({});
 
   useEffect(() => {
-    connect({ setMessages, setMain, setChannels, setRelay, setId, setRemotes });
+    let socket = connect({
+      setMessages,
+      setMain,
+      setChannels,
+      setRelay,
+      setId,
+      setRemotes,
+    });
+    return () => {
+      Object.keys(remotes).forEach((x) => remotes[x].pc.close());
+      setRemotes({});
+      if (relay) relay.disconnect();
+      setRelay(undefined);
+      if (socket) socket.disconnect();
+      socket = undefined;
+    };
   }, []);
 
   return (
@@ -49,7 +64,9 @@ export default function App() {
           text={text}
         />
       </Canvas>
-      <AppContext.Provider value={{ messages, channels, relay, id, remotes }}>
+      <AppContext.Provider
+        value={{ setMessages, messages, channels, relay, id, remotes }}
+      >
         <Sidepanel />
         <div ref={text} style={{ position: 'absolute', left: 40, top: 40 }}>
           hello
