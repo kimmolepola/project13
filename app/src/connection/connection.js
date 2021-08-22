@@ -9,16 +9,18 @@
 /* eslint-disable no-use-before-define, no-multi-assign */
 
 import adapter from 'webrtc-adapter'; // eslint-disable-line import/no-unresolved
-import { signaling as socket, relay as relaySocket } from '../service/sockets';
+import { signaling as socket, relay as relaySocket } from '../services/sockets';
 import iceServers from './iceServers';
-import { receiveMessage } from '../events/networkEvents';
+import { receiveData, receiveMessage } from '../networkMessages';
 
 const connect = ({
+  objects,
+  objectIds,
+  id,
   setMessages,
   setMain,
   setChannels,
   setRelay,
-  setId,
   setRemotes,
 }) => {
   socket.on('connect', () => console.log('signaling socket connected'));
@@ -33,7 +35,10 @@ const connect = ({
     });
     setRelay((x) => {
       if (!x) {
-        relaySocket.on('message', (arg) => receiveMessage(arg, setMessages));
+        relaySocket.on('data', (data) =>
+          receiveData(data, objects, objectIds, id),
+        );
+        relaySocket.on('message', (data) => receiveMessage(data, setMessages));
         relaySocket.emit('main', main);
         return relaySocket;
       }
@@ -73,30 +78,64 @@ const connect = ({
     };
 
     const channel = pc.createDataChannel('dataChannel', {
+      ordered: false,
       negotiated: true,
       id: 0,
     });
 
+    const channel2 = pc.createDataChannel('messageChannel', {
+      negotiated: true,
+      id: 1,
+    });
+
     console.log('channel:', channel.readyState);
+    console.log('channel2:', channel2.readyState);
 
     channel.onclose = () => {
-      setChannels((x) => x.filter((xx) => xx !== channel));
+      setChannels((x) => ({
+        message: x.message,
+        data: x.data.filter((xx) => xx !== channel),
+      }));
       console.log('dataChannel closed');
     };
 
     channel.onopen = () => {
-      setChannels((x) => [...x, channel]);
+      setChannels((x) => ({
+        message: x.message,
+        data: [...x.data, channel],
+      }));
       console.log('dataChannel open');
     };
 
     channel.onmessage = ({ data }) => {
       console.log('data', data);
+      receiveData(JSON.parse(data), objects, objectIds, id);
+    };
+
+    channel2.onclose = () => {
+      setChannels((x) => ({
+        message: x.message.filter((xx) => xx !== channel),
+        data: x.data,
+      }));
+      console.log('messageChannel closed');
+    };
+
+    channel2.onopen = () => {
+      setChannels((x) => ({
+        message: [...x.message, channel],
+        data: x.data,
+      }));
+      console.log('messageChannel open');
+    };
+
+    channel2.onmessage = ({ data }) => {
+      console.log('message', data);
       receiveMessage(JSON.parse(data), setMessages);
     };
 
     let newRemotes;
     setRemotes((x) => {
-      newRemotes = { ...x, [remoteId]: { pc, channel } };
+      newRemotes = { ...x, [remoteId]: { pc, channel, channel2 } };
       return newRemotes;
     });
     return newRemotes;
@@ -133,8 +172,8 @@ const connect = ({
     console.log('you are main');
   });
 
-  socket.on('init', (id) => {
-    setId(id);
+  socket.on('init', (clientId) => {
+    id.current = clientId; // eslint-disable-line no-param-reassign
   });
 
   socket.on('signaling', async ({ id: remoteId, description, candidate }) => {

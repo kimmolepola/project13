@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import Sidepanel from './components/React/Sidepanel';
 import GameContainer from './components/ThreeFiber/GameContainer';
 import AppContext from './context/appContext';
-import setupNetworkEvents from './events/networkEvents';
 import connect from './connection/connection';
+import subscribeToKeyboardEvents from './keyboardEvents';
 
 const AppContainer = styled.div`
   display: flex;
@@ -17,29 +17,30 @@ export default function App() {
   const [main, setMain] = useState([]);
   const [channels, setChannels] = useState([]);
   const [relay, setRelay] = useState();
-  const [id, setId] = useState({});
   const [remotes, setRemotes] = useState({});
   const [messages, setMessages] = useState([]);
+  const id = useRef();
   const objects = useRef({});
   const objectIds = useRef([]);
   const text = useRef({});
 
   useEffect(() => {
-    let socket = connect({
+    const unsubscribe = subscribeToKeyboardEvents({ remotes, objects, id });
+    const signalingSocket = connect({
+      id,
       setMessages,
       setMain,
       setChannels,
       setRelay,
-      setId,
       setRemotes,
     });
     return () => {
+      unsubscribe();
       Object.keys(remotes).forEach((x) => remotes[x].pc.close());
       setRemotes({});
       if (relay) relay.disconnect();
       setRelay(undefined);
-      if (socket) socket.disconnect();
-      socket = undefined;
+      if (signalingSocket) signalingSocket.disconnect();
     };
   }, []);
 

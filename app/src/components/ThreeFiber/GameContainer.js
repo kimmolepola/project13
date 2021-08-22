@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, Suspense, useState } from 'react';
 import Objects from './Objects';
-import addKeyboardListeners from '../../events/keyboardEvents';
+import addKeyboardListeners from '../../keyboardEvents';
 import Loop from './Loop';
 
 const GameContainer = ({ id, remotes, objectIds, objects, text }) => {
