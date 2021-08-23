@@ -9,6 +9,7 @@ const GameObjectComponent = ({ objects, id, map, objectId }) => (
           backendPosition: { x: 0, y: 0, z: 1 },
           backendQuaternion: [0, 0, 0, 1],
           elref: ref,
+          keyDowns: [],
         };
       }
     }}

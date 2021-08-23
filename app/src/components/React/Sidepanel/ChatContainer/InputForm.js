@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import theme from '../../../../theme';
 import appContext from '../../../../context/appContext';
-import { sendMessage } from '../../../../networkMessages';
+import { sendMessage } from '../../../../messageHandler';
 
 const Container = styled.div``;
 
@@ -44,7 +44,11 @@ export default function ChatInputForm() {
       <InputForm
         onSubmit={(e) => {
           e.preventDefault();
-          sendMessage(setMessages, 'chat', inputValue, id, channels, relay);
+          sendMessage(
+            { setMessages, message: inputValue, type: 'chat', id },
+            channels,
+            relay,
+          );
           setInputValue('');
         }}
         noValidate

@@ -11,12 +11,12 @@
 import adapter from 'webrtc-adapter'; // eslint-disable-line import/no-unresolved
 import { signaling as socket, relay as relaySocket } from '../services/sockets';
 import iceServers from './iceServers';
-import { receiveData, receiveMessage } from '../networkMessages';
+import { receiveData, receiveMessage } from '../messageHandler';
 
 const connect = ({
   objects,
   objectIds,
-  id,
+  setId,
   setMessages,
   setMain,
   setChannels,
@@ -35,10 +35,16 @@ const connect = ({
     });
     setRelay((x) => {
       if (!x) {
-        relaySocket.on('data', (data) =>
-          receiveData(data, objects, objectIds, id),
+        relaySocket.on('connect', () => {
+          console.log('relay socket connected');
+        });
+        relaySocket.on('disconnect', () => {
+          console.log('relay socket disconnected');
+        });
+        relaySocket.on('data', (data) => receiveData(data, objects, objectIds));
+        relaySocket.on('message', (data) =>
+          receiveMessage(remoteId, data, setMessages, objectIds, objects),
         );
-        relaySocket.on('message', (data) => receiveMessage(data, setMessages));
         relaySocket.emit('main', main);
         return relaySocket;
       }
@@ -77,65 +83,74 @@ const connect = ({
       }
     };
 
-    const channel = pc.createDataChannel('dataChannel', {
+    const channelUnordered = pc.createDataChannel('dataChannel', {
       ordered: false,
       negotiated: true,
       id: 0,
     });
 
-    const channel2 = pc.createDataChannel('messageChannel', {
+    const channelOrdered = pc.createDataChannel('messageChannel', {
       negotiated: true,
       id: 1,
     });
 
-    console.log('channel:', channel.readyState);
-    console.log('channel2:', channel2.readyState);
+    console.log('unordered channel:', channelUnordered.readyState);
+    console.log('ordered channel:', channelOrdered.readyState);
 
-    channel.onclose = () => {
+    channelUnordered.onclose = () => {
       setChannels((x) => ({
-        message: x.message,
-        data: x.data.filter((xx) => xx !== channel),
+        ordered: x.ordered,
+        unordered: x.unordered.filter((xx) => xx !== channelUnordered),
       }));
-      console.log('dataChannel closed');
+      console.log('unordered channel closed');
     };
 
-    channel.onopen = () => {
+    channelUnordered.onopen = () => {
       setChannels((x) => ({
-        message: x.message,
-        data: [...x.data, channel],
+        ordered: x.ordered,
+        unordered: [...x.unordered, channelUnordered],
       }));
-      console.log('dataChannel open');
+      console.log('unordered channel open');
     };
 
-    channel.onmessage = ({ data }) => {
-      console.log('data', data);
-      receiveData(JSON.parse(data), objects, objectIds, id);
+    channelUnordered.onmessage = ({ data }) => {
+      console.log('ordered channel data', data);
+      receiveData(JSON.parse(data), objects, objectIds);
     };
 
-    channel2.onclose = () => {
+    channelOrdered.onclose = () => {
       setChannels((x) => ({
-        message: x.message.filter((xx) => xx !== channel),
-        data: x.data,
+        ordered: x.ordered.filter((xx) => xx !== channelOrdered),
+        unordered: x.unordered,
       }));
-      console.log('messageChannel closed');
+      console.log('ordered channel closed');
     };
 
-    channel2.onopen = () => {
+    channelOrdered.onopen = () => {
       setChannels((x) => ({
-        message: [...x.message, channel],
-        data: x.data,
+        ordered: [...x.ordered, channelOrdered],
+        unordered: x.unordered,
       }));
-      console.log('messageChannel open');
+      console.log('ordered channel open');
     };
 
-    channel2.onmessage = ({ data }) => {
-      console.log('message', data);
-      receiveMessage(JSON.parse(data), setMessages);
+    channelOrdered.onmessage = ({ data }) => {
+      console.log('ordered channel data', data);
+      receiveMessage(
+        remoteId,
+        JSON.parse(data),
+        setMessages,
+        objectIds,
+        objects,
+      );
     };
 
     let newRemotes;
     setRemotes((x) => {
-      newRemotes = { ...x, [remoteId]: { pc, channel, channel2 } };
+      newRemotes = {
+        ...x,
+        [remoteId]: { pc, channelUnordered, channelOrdered },
+      };
       return newRemotes;
     });
     return newRemotes;
@@ -173,7 +188,7 @@ const connect = ({
   });
 
   socket.on('init', (clientId) => {
-    id.current = clientId; // eslint-disable-line no-param-reassign
+    setId(clientId);
   });
 
   socket.on('signaling', async ({ id: remoteId, description, candidate }) => {

@@ -19,13 +19,20 @@ export default function App() {
   const [relay, setRelay] = useState();
   const [remotes, setRemotes] = useState({});
   const [messages, setMessages] = useState([]);
-  const id = useRef();
+  const [id, setId] = useState();
   const objects = useRef({});
   const objectIds = useRef([]);
   const text = useRef({});
 
   useEffect(() => {
-    const unsubscribe = subscribeToKeyboardEvents({ remotes, objects, id });
+    const unsubscribe = subscribeToKeyboardEvents({
+      id,
+      objects,
+    });
+    return () => unsubscribe();
+  }, [id]);
+
+  useEffect(() => {
     const signalingSocket = connect({
       id,
       setMessages,
@@ -35,7 +42,6 @@ export default function App() {
       setRemotes,
     });
     return () => {
-      unsubscribe();
       Object.keys(remotes).forEach((x) => remotes[x].pc.close());
       setRemotes({});
       if (relay) relay.disconnect();
@@ -59,7 +65,6 @@ export default function App() {
       >
         <GameContainer
           id={id}
-          remotes={remotes}
           objectIds={objectIds}
           objects={objects}
           text={text}

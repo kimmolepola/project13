@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { radiansToDegrees } from '../../utils';
 import { interpolationAlpha } from '../../parameters';
 
-const loop = ({ text, id, objectIds, objects }) => {
+const loop = (text, id, objectIds, objects) => {
   const qua = new Quaternion();
   let next = Date.now();
 
@@ -44,6 +44,7 @@ const loop = ({ text, id, objectIds, objects }) => {
   useFrame((state, delta) => {
     if (Date.now() > next) {
       next = Date.now() + 10000;
+      // send data keyDowns, if main, send keyDowns, pos, rotation, rotation speed, speed
       // console.log('all ids:', allObjectIds);
       // console.log('all objects:', Object.keys(objects.current));
     }

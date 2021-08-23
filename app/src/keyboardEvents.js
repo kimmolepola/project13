@@ -1,3 +1,33 @@
+import { sendMessage } from './messageHandler';
+
+const validKeys = ['ArrowLeft', 'ArrowRight'];
+
+const subscribeToKeyboardEvents = ({ id, objects }) => {
+  const handleKeyUp = (e) => {
+    if (validKeys.includes(e.code)) {
+      objects.current[id].keyDowns.push(e.code);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.repeat) return;
+    if (validKeys.includes(e.code)) {
+      const index = objects.current[id].keyDowns.findIndex((x) => x === e.code);
+      if (index !== -1) objects.current[id].keyDowns.splice(index, 1);
+    }
+  };
+  document.addEventListener('keyup', handleKeyUp);
+  document.addEventListener('keydown', handleKeyDown);
+  return () => {
+    document.removeEventListener('keyup', handleKeyUp);
+    document.removeEventListener('keydown', handleKeyDown);
+  };
+};
+export default subscribeToKeyboardEvents;
+
+/*
+import { sendMessage } from './networkMessages';
+
 const validKeys = ['ArrowLeft', 'ArrowRight'];
 
 const subscribeToKeyboardEvents = ({ remotes, objects, id }) => {
@@ -36,3 +66,4 @@ const subscribeToKeyboardEvents = ({ remotes, objects, id }) => {
   };
 };
 export default subscribeToKeyboardEvents;
+*/
