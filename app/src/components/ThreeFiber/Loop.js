@@ -2,11 +2,22 @@ import React from 'react';
 import { Quaternion } from 'three';
 import { useFrame } from '@react-three/fiber';
 import { radiansToDegrees } from '../../utils';
-import { interpolationAlpha } from '../../parameters';
+import {
+  interpolationAlpha,
+  sendInterval,
+  relaySendInterval,
+  sendIntervalMain,
+  relaySendIntervalMain,
+} from '../../parameters';
+import {
+  sendDataOnUnorderedChannels,
+  sendDataOnRelay,
+} from '../../messageHandler';
 
-const loop = (text, id, objectIds, objects) => {
+const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
   const qua = new Quaternion();
-  let next = Date.now();
+  let nextSendTime = Date.now();
+  let nextSendTimeRelay = Date.now();
 
   const handleCamera = (state, ownRef) => {
     /* eslint-disable no-param-reassign */
@@ -30,8 +41,8 @@ const loop = (text, id, objectIds, objects) => {
 
   const handleObjects = (delta) => {
     for (let i = objectIds.length - 1; i > -1; i -= 1) {
-      if (objectIds[i] && objects.current[objectIds[i]]) {
-        const o = objects.current[objectIds[i]];
+      if (objectIds.current[i] && objects.current[objectIds.current[i]]) {
+        const o = objects.current[objectIds.current[i]];
         o.elref.position.lerp(o.backendPosition, interpolationAlpha);
         o.elref.quaternion.slerp(
           qua.fromArray(o.backendQuaternion),
@@ -41,13 +52,47 @@ const loop = (text, id, objectIds, objects) => {
     }
   };
 
+  const getUpdateData = () => {
+    const data = { type: 'update', update: {} };
+    objectIds.current.forEach((oid) => {
+      const o = objects.current[oid];
+      if (o) {
+        data.update[oid] = {
+          keyDowns: o.keyDowns,
+          position: o.position,
+          quaternion: o.quaternion.toArray(),
+          speed: o.speed,
+          rotationSpeed: o.rotationSpeed,
+        };
+      }
+    });
+    return data;
+  };
+
+  const keyDownsData = {
+    type: 'keyDowns',
+    keyDowns: objects.current[id].keyDowns,
+  };
+
   useFrame((state, delta) => {
-    if (Date.now() > next) {
-      next = Date.now() + 10000;
-      // send data keyDowns, if main, send keyDowns, pos, rotation, rotation speed, speed
-      // console.log('all ids:', allObjectIds);
-      // console.log('all objects:', Object.keys(objects.current));
+    if (Date.now() > nextSendTime) {
+      nextSendTime = Date.now() + main ? sendIntervalMain : sendInterval;
+      if (main) {
+        sendDataOnUnorderedChannels(getUpdateData(), channels);
+      } else {
+        sendDataOnUnorderedChannels(keyDownsData, channels);
+      }
     }
+    if (Date.now() > nextSendTimeRelay) {
+      nextSendTimeRelay =
+        Date.now() + main ? relaySendIntervalMain : relaySendInterval;
+      if (main) {
+        sendDataOnRelay(getUpdateData(), relay);
+      } else {
+        sendDataOnRelay(keyDownsData, relay);
+      }
+    }
+
     const ownRef = objects.current[id] ? objects.current[id].elref : undefined;
 
     handleObjects(delta);
@@ -58,4 +103,4 @@ const loop = (text, id, objectIds, objects) => {
   });
   return <></>;
 };
-export default loop;
+export default Loop;

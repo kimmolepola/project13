@@ -64,6 +64,7 @@ export default function App() {
         }}
       >
         <GameContainer
+          main={main}
           id={id}
           objectIds={objectIds}
           objects={objects}

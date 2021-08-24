@@ -11,7 +11,7 @@
 import adapter from 'webrtc-adapter'; // eslint-disable-line import/no-unresolved
 import { signaling as socket, relay as relaySocket } from '../services/sockets';
 import iceServers from './iceServers';
-import { receiveData, receiveMessage } from '../messageHandler';
+import { receiveData } from '../messageHandler';
 
 const connect = ({
   objects,
@@ -41,9 +41,8 @@ const connect = ({
         relaySocket.on('disconnect', () => {
           console.log('relay socket disconnected');
         });
-        relaySocket.on('data', (data) => receiveData(data, objects, objectIds));
-        relaySocket.on('message', (data) =>
-          receiveMessage(remoteId, data, setMessages, objectIds, objects),
+        relaySocket.on('data', (data) =>
+          receiveData(remoteId, data, setMessages, objects, objectIds),
         );
         relaySocket.emit('main', main);
         return relaySocket;
@@ -115,7 +114,7 @@ const connect = ({
 
     channelUnordered.onmessage = ({ data }) => {
       console.log('ordered channel data', data);
-      receiveData(JSON.parse(data), objects, objectIds);
+      receiveData(remoteId, JSON.parse(data), setMessages, objectIds, objects);
     };
 
     channelOrdered.onclose = () => {
@@ -136,13 +135,7 @@ const connect = ({
 
     channelOrdered.onmessage = ({ data }) => {
       console.log('ordered channel data', data);
-      receiveMessage(
-        remoteId,
-        JSON.parse(data),
-        setMessages,
-        objectIds,
-        objects,
-      );
+      receiveData(remoteId, JSON.parse(data), setMessages, objectIds, objects);
     };
 
     let newRemotes;

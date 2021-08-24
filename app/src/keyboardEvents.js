@@ -3,13 +3,13 @@ import { sendMessage } from './messageHandler';
 const validKeys = ['ArrowLeft', 'ArrowRight'];
 
 const subscribeToKeyboardEvents = ({ id, objects }) => {
-  const handleKeyUp = (e) => {
+  const handleKeyDown = (e) => {
     if (validKeys.includes(e.code)) {
       objects.current[id].keyDowns.push(e.code);
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyUp = (e) => {
     if (e.repeat) return;
     if (validKeys.includes(e.code)) {
       const index = objects.current[id].keyDowns.findIndex((x) => x === e.code);
