@@ -40,14 +40,32 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
   };
 
   const handleObjects = (delta) => {
-    for (let i = objectIds.length - 1; i > -1; i -= 1) {
-      if (objectIds.current[i] && objects.current[objectIds.current[i]]) {
+    for (let i = objectIds.current.length - 1; i > -1; i -= 1) {
+      if (objects.current[objectIds.current[i]]) {
         const o = objects.current[objectIds.current[i]];
-        o.elref.position.lerp(o.backendPosition, interpolationAlpha);
-        o.elref.quaternion.slerp(
-          qua.fromArray(o.backendQuaternion),
-          interpolationAlpha,
-        );
+        if (o) {
+          if (main) {
+            for (let ii = o.keyDowns.length - 1; ii > -1; ii -= 1) {
+              switch (o.keyDowns[ii]) {
+                case 'ArrowLeft':
+                  o.elref.rotateZ(o.rotationSpeed * delta);
+                  break;
+                case 'ArrowRight':
+                  o.elref.rotateZ(-1 * o.rotationSpeed * delta);
+                  break;
+                default:
+                  break;
+              }
+            }
+            o.elref.translateY(o.speed * delta);
+          } else {
+            o.elref.position.lerp(o.backendPosition, interpolationAlpha);
+            o.elref.quaternion.slerp(
+              qua.fromArray(o.backendQuaternion),
+              interpolationAlpha,
+            );
+          }
+        }
       }
     }
   };
@@ -55,7 +73,7 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
   const getUpdateData = () => {
     const data = { type: 'update', update: {} };
     objectIds.current.forEach((oid) => {
-      const o = objects.current[oid];
+      const o = objects.current[oid] ? objects.current[oid].elref : undefined;
       if (o) {
         data.update[oid] = {
           keyDowns: o.keyDowns,
@@ -69,27 +87,27 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
     return data;
   };
 
-  const keyDownsData = {
+  const getKeyDownsData = () => ({
     type: 'keyDowns',
     keyDowns: objects.current[id].keyDowns,
-  };
+  });
 
   useFrame((state, delta) => {
-    if (Date.now() > nextSendTime) {
-      nextSendTime = Date.now() + main ? sendIntervalMain : sendInterval;
+    if (Date.now() > nextSendTime && objects.current[id]) {
+      nextSendTime = Date.now() + (main ? sendIntervalMain : sendInterval);
       if (main) {
         sendDataOnUnorderedChannels(getUpdateData(), channels);
       } else {
-        sendDataOnUnorderedChannels(keyDownsData, channels);
+        sendDataOnUnorderedChannels(getKeyDownsData(), channels);
       }
     }
-    if (Date.now() > nextSendTimeRelay) {
+    if (Date.now() > nextSendTimeRelay && objects.current[id]) {
       nextSendTimeRelay =
-        Date.now() + main ? relaySendIntervalMain : relaySendInterval;
+        Date.now() + (main ? relaySendIntervalMain : relaySendInterval);
       if (main) {
         sendDataOnRelay(getUpdateData(), relay);
       } else {
-        sendDataOnRelay(keyDownsData, relay);
+        sendDataOnRelay(getKeyDownsData(), relay);
       }
     }
 

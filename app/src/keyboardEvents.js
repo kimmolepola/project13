@@ -1,10 +1,11 @@
-import { sendMessage } from './messageHandler';
-
 const validKeys = ['ArrowLeft', 'ArrowRight'];
 
 const subscribeToKeyboardEvents = ({ id, objects }) => {
   const handleKeyDown = (e) => {
-    if (validKeys.includes(e.code)) {
+    if (
+      validKeys.includes(e.code) &&
+      !objects.current[id].keyDowns.includes(e.code)
+    ) {
       objects.current[id].keyDowns.push(e.code);
     }
   };

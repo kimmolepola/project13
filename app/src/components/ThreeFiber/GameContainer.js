@@ -2,9 +2,19 @@ import React, { Suspense } from 'react';
 import Objects from './Objects';
 import Loop from './Loop';
 
-const GameContainer = ({ main, id, objectIds, objects, text }) => (
+const GameContainer = ({
+  relay,
+  channels,
+  main,
+  id,
+  objectIds,
+  objects,
+  text,
+}) => (
   <>
     <Loop
+      relay={relay}
+      channels={channels}
       main={main}
       text={text}
       id={id}

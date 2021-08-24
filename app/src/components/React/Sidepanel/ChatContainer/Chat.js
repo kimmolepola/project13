@@ -53,19 +53,18 @@ const Container = styled.div`
 `;
 
 export default function Chat() {
-  const { messages, id } = useContext(appContext);
+  const { chatMessages, id } = useContext(appContext);
 
   return (
     <Container>
-      {console.log('messagess---:', messages)}
-      {messages.map((x, index) => (
-        <div key={x.messageId}>
+      {chatMessages.map((x, index) => (
+        <div key={x.chatMessageId}>
           <Divider
-            style={{ display: index !== messages.length - 1 ? '' : 'none' }}
+            style={{ display: index !== chatMessages.length - 1 ? '' : 'none' }}
           />
           <Message style={{ background: x.userId === id ? 'yellow' : 'none' }}>
             <Text>
-              {x.userId}: {x.message}
+              {x.userId}: {x.chatMessage}
             </Text>
             <Avatar src="avatar.jpg" alt="Avatar" />
           </Message>

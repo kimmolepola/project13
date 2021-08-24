@@ -37,7 +37,7 @@ const InputForm = styled.form`
 
 export default function ChatInputForm() {
   const [inputValue, setInputValue] = useState('');
-  const { setMessages, id, channels, relay } = useContext(appContext);
+  const { setChatMessages, id, channels, relay } = useContext(appContext);
 
   return (
     <Container>
@@ -45,7 +45,12 @@ export default function ChatInputForm() {
         onSubmit={(e) => {
           e.preventDefault();
           sendDataOnOrderedChannelsAndRelay(
-            { setMessages, chatMessage: inputValue, type: 'chatMessage', id },
+            {
+              setChatMessages,
+              chatMessage: inputValue,
+              type: 'chatMessage',
+              id,
+            },
             channels,
             relay,
           );

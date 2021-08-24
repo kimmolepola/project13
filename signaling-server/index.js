@@ -10,8 +10,8 @@ const clients = {};
 let main = null;
 
 io.on('connection', (socket) => {
-  console.log('connected:', socket.id);
   const id = Math.random().toString();
+  console.log('connected:', id);
   clients[id] = socket;
   console.log(Object.keys(clients));
 
@@ -19,14 +19,13 @@ io.on('connection', (socket) => {
 
   if (!main) {
     main = id;
+    console.log('main:', main);
     socket.emit('main');
   } else {
     socket.emit('connectToMain', main);
   }
 
   const signaling = ({ remoteId, description, candidate }) => {
-    console.log('signaling, remoteId:', remoteId);
-    console.log('clients keys:', Object.keys(clients));
     if (clients[remoteId]) {
       clients[remoteId].emit('signaling', {
         id,
@@ -38,14 +37,14 @@ io.on('connection', (socket) => {
 
   const disconnect = () => {
     socket.broadcast.emit('peerDisconnect', id);
-    console.log('disconnect,', id, 'main:', main);
+    console.log('disconnect,', id);
     delete clients[id];
     if (main === id) {
-      console.log('main === id');
       main = null;
       Object.keys(clients).forEach((x) => {
         if (main === null) {
           main = x;
+          console.log('main:', main);
           clients[x].emit('main');
         } else {
           clients[x].emit('connectToMain', main);

@@ -13,15 +13,18 @@ export default function Objects({ id, objectIds, objects }) {
   return (
     <>
       <Background map={image1} />
-      {objectIds.current.map((x) => (
-        <GameObject
-          objects={objects}
-          id={id}
-          map={fighterImage}
-          objectId={x}
-          key={x}
-        />
-      ))}
+      {objectIds.current.map((x) => {
+        console.log('map id:', x);
+        return (
+          <GameObject
+            objects={objects}
+            id={id}
+            map={fighterImage}
+            objectId={x}
+            key={x}
+          />
+        );
+      })}
     </>
   );
 }

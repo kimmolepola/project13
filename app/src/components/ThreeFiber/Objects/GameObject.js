@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { speed, rotationSpeed } from '../../../parameters';
 
 const GameObjectComponent = ({ objects, id, map, objectId }) => (
   <mesh
@@ -6,6 +7,8 @@ const GameObjectComponent = ({ objects, id, map, objectId }) => (
       if (!objects.current[objectId]) {
         // eslint-disable-next-line no-param-reassign
         objects.current[objectId] = {
+          speed,
+          rotationSpeed,
           backendPosition: { x: 0, y: 0, z: 1 },
           backendQuaternion: [0, 0, 0, 1],
           elref: ref,

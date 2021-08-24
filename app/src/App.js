@@ -14,12 +14,13 @@ const AppContainer = styled.div`
 `;
 
 export default function App() {
-  const [main, setMain] = useState([]);
-  const [channels, setChannels] = useState([]);
+  const [main, setMain] = useState();
+  const [channels, setChannels] = useState({ ordered: [], unordered: [] });
   const [relay, setRelay] = useState();
   const [remotes, setRemotes] = useState({});
-  const [messages, setMessages] = useState([]);
+  const [chatMessages, setChatMessages] = useState([]);
   const [id, setId] = useState();
+  const [ids, setIds] = useState([]);
   const objects = useRef({});
   const objectIds = useRef([]);
   const text = useRef({});
@@ -34,15 +35,20 @@ export default function App() {
 
   useEffect(() => {
     const signalingSocket = connect({
-      id,
-      setMessages,
+      objects,
+      objectIds,
+      setIds,
+      setId,
+      setChatMessages,
       setMain,
       setChannels,
       setRelay,
       setRemotes,
     });
     return () => {
-      Object.keys(remotes).forEach((x) => remotes[x].pc.close());
+      Object.keys(remotes).forEach((x) => {
+        if (remotes[x].pc) remotes[x].pc.close();
+      });
       setRemotes({});
       if (relay) relay.disconnect();
       setRelay(undefined);
@@ -64,6 +70,8 @@ export default function App() {
         }}
       >
         <GameContainer
+          relay={relay}
+          channels={channels}
           main={main}
           id={id}
           objectIds={objectIds}
@@ -72,7 +80,7 @@ export default function App() {
         />
       </Canvas>
       <AppContext.Provider
-        value={{ setMessages, messages, channels, relay, id, remotes }}
+        value={{ setChatMessages, chatMessages, channels, relay, id, remotes }}
       >
         <Sidepanel />
         <div ref={text} style={{ position: 'absolute', left: 40, top: 40 }}>

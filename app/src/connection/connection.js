@@ -9,15 +9,17 @@
 /* eslint-disable no-use-before-define, no-multi-assign */
 
 import adapter from 'webrtc-adapter'; // eslint-disable-line import/no-unresolved
-import { signaling as socket, relay as relaySocket } from '../services/sockets';
+import { io } from 'socket.io-client';
+import socket from '../services/signalingSocket';
 import iceServers from './iceServers';
 import { receiveData } from '../messageHandler';
 
 const connect = ({
   objects,
   objectIds,
+  setIds,
   setId,
-  setMessages,
+  setChatMessages,
   setMain,
   setChannels,
   setRelay,
@@ -35,6 +37,7 @@ const connect = ({
     });
     setRelay((x) => {
       if (!x) {
+        const relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
         relaySocket.on('connect', () => {
           console.log('relay socket connected');
         });
@@ -42,7 +45,7 @@ const connect = ({
           console.log('relay socket disconnected');
         });
         relaySocket.on('data', (data) =>
-          receiveData(remoteId, data, setMessages, objects, objectIds),
+          receiveData(remoteId, data, setChatMessages, objects, objectIds),
         );
         relaySocket.emit('main', main);
         return relaySocket;
@@ -56,12 +59,20 @@ const connect = ({
   };
 
   const start = (remoteId) => {
+    console.log('start connection to remoteId', remoteId);
     const pc = new RTCPeerConnection({ iceServers });
 
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'failed') {
-        console.log('ice failed');
+        console.log('peer connection failed');
         handleFailed(remoteId);
+        console.log('id push:', remoteId);
+        objectIds.current.push(remoteId);
+        setIds(objectIds.current);
+      } else if (pc.connectionState === 'connected') {
+        console.log('peer connection ready');
+        objectIds.current.push(remoteId);
+        setIds(objectIds.current);
       }
     };
 
@@ -82,13 +93,13 @@ const connect = ({
       }
     };
 
-    const channelUnordered = pc.createDataChannel('dataChannel', {
-      ordered: false,
+    const channelUnordered = pc.createDataChannel('unorderedChannel', {
+      // ordered: false,
       negotiated: true,
       id: 0,
     });
 
-    const channelOrdered = pc.createDataChannel('messageChannel', {
+    const channelOrdered = pc.createDataChannel('orderedChannel', {
       negotiated: true,
       id: 1,
     });
@@ -113,8 +124,14 @@ const connect = ({
     };
 
     channelUnordered.onmessage = ({ data }) => {
-      console.log('ordered channel data', data);
-      receiveData(remoteId, JSON.parse(data), setMessages, objectIds, objects);
+      console.log('unordered channel data', data);
+      receiveData(
+        remoteId,
+        JSON.parse(data),
+        setChatMessages,
+        objectIds,
+        objects,
+      );
     };
 
     channelOrdered.onclose = () => {
@@ -135,7 +152,13 @@ const connect = ({
 
     channelOrdered.onmessage = ({ data }) => {
       console.log('ordered channel data', data);
-      receiveData(remoteId, JSON.parse(data), setMessages, objectIds, objects);
+      receiveData(
+        remoteId,
+        JSON.parse(data),
+        setChatMessages,
+        objectIds,
+        objects,
+      );
     };
 
     let newRemotes;
@@ -150,6 +173,10 @@ const connect = ({
   };
 
   socket.on('peerDisconnect', (remoteId) => {
+    delete objects.current[remoteId]; // eslint-disable-line no-param-reassign
+    const index = objectIds.current.indexOf((x) => x === remoteId);
+    if (index !== -1) objectIds.current.splice(index, 1);
+    setIds(objectIds.current);
     let newRemotes;
     setRemotes((x) => {
       if (x[remoteId]) x[remoteId].pc.close();
@@ -167,7 +194,6 @@ const connect = ({
   });
 
   socket.on('connectToMain', (remoteId) => {
-    console.log('start connect to main', remoteId);
     start(remoteId);
   });
 
@@ -182,6 +208,9 @@ const connect = ({
 
   socket.on('init', (clientId) => {
     setId(clientId);
+    objectIds.current.push(clientId);
+    setIds(objectIds.current);
+    console.log('own id:', clientId);
   });
 
   socket.on('signaling', async ({ id: remoteId, description, candidate }) => {

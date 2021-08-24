@@ -3,15 +3,16 @@ import { chatMessageTimeToLiveSeconds } from './parameters';
 export const receiveData = (
   remoteId,
   data,
-  setMessages,
+  setChatMessages,
   objectIds,
   objects,
 ) => {
+  console.log('receive data:', data);
   switch (data.type) {
     case 'update': // only non-main will receive these
       for (let i = objectIds.current.length - 1; i > -1; i -= 1) {
         const objectLocal = objects.current[objectIds.current[i]];
-        const objectBackend = data[objectIds.current[i]];
+        const objectBackend = data.update[objectIds.current[i]];
         if (objectLocal && objectBackend) {
           // if (objectIds.current[i] !== id) {
           //  objectLocal.keyDowns = objectBackend.keyDowns;
@@ -44,9 +45,9 @@ export const receiveData = (
       break;
     case 'chatMessage': {
       const message = { ...data, userId: remoteId };
-      setMessages((x) => [message, ...x]);
+      setChatMessages((x) => [message, ...x]);
       setTimeout(
-        () => setMessages((x) => x.filter((xx) => xx !== message)),
+        () => setChatMessages((x) => x.filter((xx) => xx !== message)),
         chatMessageTimeToLiveSeconds * 1000,
       );
       break;
@@ -57,24 +58,26 @@ export const receiveData = (
 };
 
 export const sendDataOnRelay = (data, relay) => {
+  console.log('send relay:', data);
   if (relay) relay.emit('data', data);
 };
 
 export const sendDataOnUnorderedChannels = (data, channels) => {
+  console.log('send channel:', data);
   const stringData = JSON.stringify(data);
   channels.unordered.forEach((x) => x.send(stringData));
 };
 
 export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
   let data;
-  switch (data.type) {
+  switch (arg.type) {
     case 'chatMessage':
       data = {
         type: arg.type,
-        messageId: Math.random().toString(),
-        message: arg.message,
+        chatMessageId: Math.random().toString(),
+        chatMessage: arg.chatMessage,
       };
-      receiveData(arg.id, data, arg.setMessages);
+      receiveData(arg.id, data, arg.setChatMessages);
       break;
     default:
       data = arg;
