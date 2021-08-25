@@ -14,7 +14,6 @@ let main;
 io.on('connection', (socket) => {
   console.log('connected:', socket.id);
   socket.on('data', (data) => {
-    console.log('relaying data:', data);
     if (socket === main) {
       socket.broadcast.emit('data', data);
     } else if (main) {
@@ -22,7 +21,6 @@ io.on('connection', (socket) => {
     }
   });
   socket.on('message', (message) => {
-    console.log('relaying message:', message);
     if (socket === main) {
       socket.broadcast.emit('message', message);
     } else if (main) {

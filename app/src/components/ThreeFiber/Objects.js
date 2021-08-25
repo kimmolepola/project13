@@ -14,7 +14,7 @@ export default function Objects({ id, objectIds, objects }) {
     <>
       <Background map={image1} />
       {objectIds.current.map((x) => {
-        console.log('map id:', x);
+        console.log('DOM render GameObject:', x);
         return (
           <GameObject
             objects={objects}

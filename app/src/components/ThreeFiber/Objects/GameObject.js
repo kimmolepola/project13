@@ -14,6 +14,7 @@ const GameObjectComponent = ({ objects, id, map, objectId }) => (
           elref: ref,
           keyDowns: [],
         };
+        console.log('new object created:', objectId);
       }
     }}
   >

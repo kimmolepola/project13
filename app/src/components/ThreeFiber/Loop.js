@@ -44,13 +44,15 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
       if (objects.current[objectIds.current[i]]) {
         const o = objects.current[objectIds.current[i]];
         if (o) {
-          if (main) {
+          if (main || true) { // eslint-disable-line
             for (let ii = o.keyDowns.length - 1; ii > -1; ii -= 1) {
+              // console.log('loop keyDown:', o.keyDowns[ii]);
               switch (o.keyDowns[ii]) {
                 case 'ArrowLeft':
                   o.elref.rotateZ(o.rotationSpeed * delta);
                   break;
                 case 'ArrowRight':
+                  console.log('case ArrowRight');
                   o.elref.rotateZ(-1 * o.rotationSpeed * delta);
                   break;
                 default:
@@ -58,7 +60,8 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
               }
             }
             o.elref.translateY(o.speed * delta);
-          } else {
+          }
+          if (!main) {
             o.elref.position.lerp(o.backendPosition, interpolationAlpha);
             o.elref.quaternion.slerp(
               qua.fromArray(o.backendQuaternion),
@@ -73,12 +76,17 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
   const getUpdateData = () => {
     const data = { type: 'update', update: {} };
     objectIds.current.forEach((oid) => {
-      const o = objects.current[oid] ? objects.current[oid].elref : undefined;
+      console.log('get update data, objects:', objects.current);
+      const o =
+        objects.current[oid] && objects.current[oid].elref
+          ? objects.current[oid]
+          : undefined;
+      console.log('get update data, object:', o);
       if (o) {
         data.update[oid] = {
           keyDowns: o.keyDowns,
-          position: o.position,
-          quaternion: o.quaternion.toArray(),
+          position: o.elref.position,
+          quaternion: o.elref.quaternion.toArray(),
           speed: o.speed,
           rotationSpeed: o.rotationSpeed,
         };

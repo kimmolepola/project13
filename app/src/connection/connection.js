@@ -36,6 +36,7 @@ const connect = ({
       return x;
     });
     setRelay((x) => {
+      console.log('using relay connection with', x);
       if (!x) {
         const relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
         relaySocket.on('connect', () => {
@@ -64,13 +65,12 @@ const connect = ({
 
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'failed') {
-        console.log('peer connection failed');
+        console.log('peer connection failed with', remoteId);
         handleFailed(remoteId);
-        console.log('id push:', remoteId);
         objectIds.current.push(remoteId);
         setIds(objectIds.current);
       } else if (pc.connectionState === 'connected') {
-        console.log('peer connection ready');
+        console.log('peer connection ready with', remoteId);
         objectIds.current.push(remoteId);
         setIds(objectIds.current);
       }
@@ -83,7 +83,6 @@ const connect = ({
     pc.onnegotiationneeded = async () => {
       try {
         await pc.setLocalDescription();
-        console.log('signaling');
         socket.emit('signaling', {
           remoteId,
           description: pc.localDescription,
@@ -104,15 +103,19 @@ const connect = ({
       id: 1,
     });
 
-    console.log('unordered channel:', channelUnordered.readyState);
-    console.log('ordered channel:', channelOrdered.readyState);
+    console.log(
+      'unordered channel with:',
+      remoteId,
+      channelUnordered.readyState,
+    );
+    console.log('ordered channel with:', remoteId, channelOrdered.readyState);
 
     channelUnordered.onclose = () => {
       setChannels((x) => ({
         ordered: x.ordered,
         unordered: x.unordered.filter((xx) => xx !== channelUnordered),
       }));
-      console.log('unordered channel closed');
+      console.log('unordered channel closed with', remoteId);
     };
 
     channelUnordered.onopen = () => {
@@ -120,11 +123,10 @@ const connect = ({
         ordered: x.ordered,
         unordered: [...x.unordered, channelUnordered],
       }));
-      console.log('unordered channel open');
+      console.log('unordered channel open with', remoteId);
     };
 
     channelUnordered.onmessage = ({ data }) => {
-      console.log('unordered channel data', data);
       receiveData(
         remoteId,
         JSON.parse(data),
@@ -139,7 +141,7 @@ const connect = ({
         ordered: x.ordered.filter((xx) => xx !== channelOrdered),
         unordered: x.unordered,
       }));
-      console.log('ordered channel closed');
+      console.log('ordered channel closed with', remoteId);
     };
 
     channelOrdered.onopen = () => {
@@ -151,7 +153,6 @@ const connect = ({
     };
 
     channelOrdered.onmessage = ({ data }) => {
-      console.log('ordered channel data', data);
       receiveData(
         remoteId,
         JSON.parse(data),
@@ -209,12 +210,11 @@ const connect = ({
   socket.on('init', (clientId) => {
     setId(clientId);
     objectIds.current.push(clientId);
-    setIds(objectIds.current);
+    // setIds(objectIds.current);
     console.log('own id:', clientId);
   });
 
   socket.on('signaling', async ({ id: remoteId, description, candidate }) => {
-    console.log('signaling received');
     let remotes;
     setRemotes((x) => {
       remotes = x;
@@ -227,7 +227,6 @@ const connect = ({
     try {
       if (description) {
         await pc.setRemoteDescription(description);
-        console.log('description:', description);
         if (description.type === 'offer') {
           await pc.setLocalDescription();
           socket.emit('signaling', {
@@ -246,34 +245,3 @@ const connect = ({
 };
 
 export default connect;
-
-/*
-    sendButton.onclick = () => {
-      const data = dataChannelSend.value;
-      if (pc.connectionState === 'failed' && relaySocket) {
-        relaySocket.emit('relay', data);
-      } else {
-        channel.send(data);
-      }
-      console.log(`Sent Data: ${data}`);
-    };
-    */
-
-/*
-  closeButton.onclick = () => {
-    if (pc) {
-      pc.close();
-      connectionStateText.innerHTML = 'disconnected';
-    }
-    if (relaySocket) {
-      relaySocket.disconnect();
-      connectionStateText.innerHTML = 'disconnected';
-    }
-  };
-  */
-
-/*
-  startButton.onclick = () => {
-    start();
-  };
-  */

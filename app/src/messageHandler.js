@@ -7,7 +7,6 @@ export const receiveData = (
   objectIds,
   objects,
 ) => {
-  console.log('receive data:', data);
   switch (data.type) {
     case 'update': // only non-main will receive these
       for (let i = objectIds.current.length - 1; i > -1; i -= 1) {
@@ -28,7 +27,7 @@ export const receiveData = (
       if (objects.current[remoteId]) {
         const { keyDowns } = objects.current[remoteId];
         keyDowns.splice(0, keyDowns.length);
-        keyDowns.push(data.keysDowns);
+        keyDowns.push(...data.keyDowns);
       }
       break;
     case 'setIds':
@@ -58,14 +57,16 @@ export const receiveData = (
 };
 
 export const sendDataOnRelay = (data, relay) => {
-  console.log('send relay:', data);
-  if (relay) relay.emit('data', data);
+  if (relay) {
+    relay.emit('data', data);
+  }
 };
 
 export const sendDataOnUnorderedChannels = (data, channels) => {
-  console.log('send channel:', data);
-  const stringData = JSON.stringify(data);
-  channels.unordered.forEach((x) => x.send(stringData));
+  if (channels.unordered.length) {
+    const stringData = JSON.stringify(data);
+    channels.unordered.forEach((x) => x.send(stringData));
+  }
 };
 
 export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
