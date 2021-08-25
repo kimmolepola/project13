@@ -46,13 +46,11 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
         if (o) {
           if (main || true) { // eslint-disable-line
             for (let ii = o.keyDowns.length - 1; ii > -1; ii -= 1) {
-              // console.log('loop keyDown:', o.keyDowns[ii]);
               switch (o.keyDowns[ii]) {
                 case 'ArrowLeft':
                   o.elref.rotateZ(o.rotationSpeed * delta);
                   break;
                 case 'ArrowRight':
-                  console.log('case ArrowRight');
                   o.elref.rotateZ(-1 * o.rotationSpeed * delta);
                   break;
                 default:
@@ -76,12 +74,10 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
   const getUpdateData = () => {
     const data = { type: 'update', update: {} };
     objectIds.current.forEach((oid) => {
-      console.log('get update data, objects:', objects.current);
       const o =
         objects.current[oid] && objects.current[oid].elref
           ? objects.current[oid]
           : undefined;
-      console.log('get update data, object:', o);
       if (o) {
         data.update[oid] = {
           keyDowns: o.keyDowns,
