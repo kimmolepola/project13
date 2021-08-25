@@ -29,14 +29,13 @@ const connect = ({
   socket.on('disconnect', () => console.log('signaling socket disconnected'));
 
   const handleFailed = (remoteId) => {
-    console.log('using relay connection');
+    console.log('peer', remoteId, 'using relay connection');
     let main = false;
     setMain((x) => {
       main = x;
       return x;
     });
     setRelay((x) => {
-      console.log('using relay connection with', x);
       if (!x) {
         const relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
         relaySocket.on('connect', () => {
@@ -60,17 +59,17 @@ const connect = ({
   };
 
   const start = (remoteId) => {
-    console.log('start connection to remoteId', remoteId);
+    console.log('peer', remoteId, 'start connection to remoteId');
     const pc = new RTCPeerConnection({ iceServers });
 
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'failed') {
-        console.log('peer connection failed with', remoteId);
+        console.log('peer', remoteId, 'peer connection failed');
         handleFailed(remoteId);
         objectIds.current.push(remoteId);
         setIds(objectIds.current);
       } else if (pc.connectionState === 'connected') {
-        console.log('peer connection ready with', remoteId);
+        console.log('peer', remoteId, 'peer connection ready');
         objectIds.current.push(remoteId);
         setIds(objectIds.current);
       }
@@ -104,18 +103,19 @@ const connect = ({
     });
 
     console.log(
-      'unordered channel with:',
+      'peer',
       remoteId,
+      'unordered channel',
       channelUnordered.readyState,
     );
-    console.log('ordered channel with:', remoteId, channelOrdered.readyState);
+    console.log('peer', remoteId, 'ordered channel', channelOrdered.readyState);
 
     channelUnordered.onclose = () => {
       setChannels((x) => ({
         ordered: x.ordered,
         unordered: x.unordered.filter((xx) => xx !== channelUnordered),
       }));
-      console.log('unordered channel closed with', remoteId);
+      console.log('peer', remoteId, 'unordered channel closed');
     };
 
     channelUnordered.onopen = () => {
@@ -123,7 +123,7 @@ const connect = ({
         ordered: x.ordered,
         unordered: [...x.unordered, channelUnordered],
       }));
-      console.log('unordered channel open with', remoteId);
+      console.log('peer', remoteId, 'unordered channel open');
     };
 
     channelUnordered.onmessage = ({ data }) => {
@@ -141,7 +141,7 @@ const connect = ({
         ordered: x.ordered.filter((xx) => xx !== channelOrdered),
         unordered: x.unordered,
       }));
-      console.log('ordered channel closed with', remoteId);
+      console.log('peer', remoteId, 'ordered channel closed');
     };
 
     channelOrdered.onopen = () => {
@@ -149,7 +149,7 @@ const connect = ({
         ordered: [...x.ordered, channelOrdered],
         unordered: x.unordered,
       }));
-      console.log('ordered channel open');
+      console.log('peer', remoteId, 'ordered channel open');
     };
 
     channelOrdered.onmessage = ({ data }) => {
@@ -174,6 +174,7 @@ const connect = ({
   };
 
   socket.on('peerDisconnect', (remoteId) => {
+    console.log('peer', remoteId, 'disconnect');
     delete objects.current[remoteId]; // eslint-disable-line no-param-reassign
     const index = objectIds.current.indexOf((x) => x === remoteId);
     if (index !== -1) objectIds.current.splice(index, 1);
