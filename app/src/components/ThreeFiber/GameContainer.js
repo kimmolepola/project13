@@ -3,6 +3,7 @@ import Objects from './Objects';
 import Loop from './Loop';
 
 const GameContainer = ({
+  ids,
   relay,
   channels,
   main,
@@ -22,7 +23,7 @@ const GameContainer = ({
       objects={objects}
     />
     <Suspense fallback={null}>
-      <Objects id={id} objectIds={objectIds} objects={objects} />
+      <Objects ids={ids} id={id} objectIds={objectIds} objects={objects} />
     </Suspense>
   </>
 );

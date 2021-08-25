@@ -210,7 +210,7 @@ const connect = ({
   socket.on('init', (clientId) => {
     setId(clientId);
     objectIds.current.push(clientId);
-    // setIds(objectIds.current);
+    setIds(objectIds.current);
     console.log('own id:', clientId);
   });
 

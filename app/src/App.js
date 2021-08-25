@@ -70,6 +70,7 @@ export default function App() {
         }}
       >
         <GameContainer
+          ids={ids}
           relay={relay}
           channels={channels}
           main={main}

@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { speed, rotationSpeed } from '../../../parameters';
 
 const GameObjectComponent = ({ objects, id, map, objectId }) => (
@@ -32,10 +32,4 @@ const GameObjectComponent = ({ objects, id, map, objectId }) => (
   </mesh>
 );
 
-GameObjectComponent.displayName = 'GameObjectComponent';
-const MemoGameObjectComponent = memo(
-  GameObjectComponent,
-  (prev, next) => prev.id === next.id,
-);
-
-export default MemoGameObjectComponent;
+export default GameObjectComponent;
