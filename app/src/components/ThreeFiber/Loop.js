@@ -43,7 +43,7 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
     for (let i = objectIds.current.length - 1; i > -1; i -= 1) {
       if (objects.current[objectIds.current[i]]) {
         const o = objects.current[objectIds.current[i]];
-        if (o) {
+        if (o && o.elref) {
           if (main || true) { // eslint-disable-line
             for (let ii = o.keyDowns.length - 1; ii > -1; ii -= 1) {
               switch (o.keyDowns[ii]) {

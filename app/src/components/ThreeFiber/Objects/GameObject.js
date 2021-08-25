@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { speed, rotationSpeed } from '../../../parameters';
 
-const GameObjectComponent = ({ objects, id, map, objectId }) => (
+const GameObject = ({ ids, objects, id, map, objectId }) => (
   <mesh
     ref={(ref) => {
       if (!objects.current[objectId]) {
@@ -14,10 +14,15 @@ const GameObjectComponent = ({ objects, id, map, objectId }) => (
           elref: ref,
           keyDowns: [],
         };
-        console.log('new object created:', objectId);
+        console.log(
+          'new object created:',
+          objectId,
+          'creates after deletion, fix this',
+        );
       }
     }}
   >
+    {console.log('render', objectId)}
     <planeGeometry
       args={[
         Math.min(1, map.image.width / map.image.height),
@@ -25,11 +30,17 @@ const GameObjectComponent = ({ objects, id, map, objectId }) => (
       ]}
     />
     <meshBasicMaterial
-      color={objectId === id ? 'orange' : null}
+      color={ids && objectId === id ? 'orange' : null}
       transparent
       map={map}
     />
   </mesh>
 );
 
-export default GameObjectComponent;
+GameObject.displayName = 'GameObject';
+const MemoGameObject = memo(
+  GameObject,
+  (prev, next) => prev.objectId === next.objectId,
+);
+
+export default MemoGameObject;

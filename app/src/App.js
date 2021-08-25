@@ -25,6 +25,9 @@ export default function App() {
   const objectIds = useRef([]);
   const text = useRef({});
 
+  console.log('objectIds:', objectIds.current);
+  console.log('objects:', objects.current);
+
   useEffect(() => {
     const unsubscribe = subscribeToKeyboardEvents({
       id,
