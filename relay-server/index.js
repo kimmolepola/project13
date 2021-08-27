@@ -14,6 +14,7 @@ let main;
 io.on('connection', (socket) => {
   console.log('connected:', socket.id);
   socket.on('data', (data) => {
+    console.log('data', data);
     if (socket === main) {
       socket.broadcast.emit('data', data);
     } else if (main) {
