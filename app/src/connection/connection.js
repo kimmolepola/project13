@@ -26,6 +26,9 @@ const connect = ({
   setRelay,
   setRemotes,
 }) => {
+  let ownId;
+  let main = false;
+
   socket.on('connect', () => {
     setConnectionMessage('signaling socket connected');
     console.log('signaling socket connected');
@@ -38,15 +41,18 @@ const connect = ({
   const handleFailed = (remoteId) => {
     setConnectionMessage(`peer ${remoteId}, using relay connection`);
     console.log('peer', remoteId, 'using relay connection');
-    let main = false;
-    setMain((x) => {
-      main = x;
-      return x;
-    });
     setRelay((x) => {
       if (!x) {
         const relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
+        relaySocket.on('newPeer', () => {
+          // to trigger network message of current ids which this new peer will need
+          setIds((xx) => [...xx]);
+        });
         relaySocket.on('connect', () => {
+          relaySocket.emit('clientId', ownId);
+          if (main) {
+            relaySocket.emit('main');
+          }
           setConnectionMessage('relay socket connected');
           console.log('relay socket connected');
         });
@@ -54,10 +60,17 @@ const connect = ({
           setConnectionMessage('relay socket disconnected');
           console.log('relay socket disconnected');
         });
-        relaySocket.on('data', (data) =>
-          receiveData(remoteId, data, setChatMessages, objectIds, objects),
+        relaySocket.on('data', (data, clientId) =>
+          receiveData(
+            clientId,
+            data,
+            setChatMessages,
+            objectIds,
+            objects,
+            setIds,
+            ownId,
+          ),
         );
-        relaySocket.emit('main', main);
         return relaySocket;
       }
       return x;
@@ -69,8 +82,8 @@ const connect = ({
   };
 
   const start = (remoteId) => {
-    setConnectionMessage(`peer ${remoteId}, start connecting`);
-    console.log('peer', remoteId, 'start connection to remoteId');
+    setConnectionMessage(`peer ${remoteId}, starting connection`);
+    console.log('peer', remoteId, 'starting connection');
     const pc = new RTCPeerConnection({ iceServers });
 
     pc.onconnectionstatechange = () => {
@@ -139,6 +152,8 @@ const connect = ({
         setChatMessages,
         objectIds,
         objects,
+        setIds,
+        ownId,
       );
     };
 
@@ -163,6 +178,8 @@ const connect = ({
         setChatMessages,
         objectIds,
         objects,
+        setIds,
+        ownId,
       );
     };
 
@@ -205,6 +222,7 @@ const connect = ({
   });
 
   socket.on('main', () => {
+    main = true;
     setMain(true);
     setRelay((x) => {
       if (x) x.emit('main', true);
@@ -214,6 +232,7 @@ const connect = ({
   });
 
   socket.on('init', (clientId) => {
+    ownId = clientId;
     setId(clientId);
     objectIds.current.push(clientId);
     setIds((x) => [...x, clientId]);

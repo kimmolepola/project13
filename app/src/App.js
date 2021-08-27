@@ -6,6 +6,7 @@ import GameContainer from './components/ThreeFiber/GameContainer';
 import AppContext from './context/appContext';
 import connect from './connection/connection';
 import subscribeToKeyboardEvents from './keyboardEvents';
+import { sendDataOnOrderedChannelsAndRelay } from './messageHandler';
 
 const AppContainer = styled.div`
   display: flex;
@@ -25,6 +26,24 @@ export default function App() {
   const objects = useRef({});
   const objectIds = useRef([]);
   const text = useRef({});
+
+  useEffect(() => {
+    const updatePeers = (idsNew) => {
+      if (main) {
+        const arg = { type: 'setIds', ids: idsNew };
+        sendDataOnOrderedChannelsAndRelay(arg, channels, relay);
+      }
+    };
+    const cleanup = (idsNew) => {
+      const objectsNew = {};
+      idsNew.forEach((x) => {
+        objectsNew[x] = objects.current[x];
+      });
+      objects.current = objectsNew;
+    };
+    cleanup(ids);
+    updatePeers(ids);
+  }, [ids]);
 
   useEffect(() => {
     const unsubscribe = subscribeToKeyboardEvents({
@@ -84,6 +103,8 @@ export default function App() {
       </Canvas>
       <AppContext.Provider
         value={{
+          main,
+          ids,
           connectionMessage,
           setChatMessages,
           chatMessages,

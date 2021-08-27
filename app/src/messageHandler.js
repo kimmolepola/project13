@@ -6,6 +6,8 @@ export const receiveData = (
   setChatMessages,
   objectIds,
   objects,
+  setIds,
+  ownId,
 ) => {
   switch (data.type) {
     case 'update': // only non-main will receive these
@@ -13,9 +15,9 @@ export const receiveData = (
         const objectLocal = objects.current[objectIds.current[i]];
         const objectBackend = data.update[objectIds.current[i]];
         if (objectLocal && objectBackend) {
-          // if (objectIds.current[i] !== id) {
-          //  objectLocal.keyDowns = objectBackend.keyDowns;
-          // }
+          if (objectIds.current[i] !== ownId) {
+            objectLocal.keyDowns = objectBackend.keyDowns;
+          }
           objectLocal.rotationSpeed = objectBackend.rotationSpeed;
           objectLocal.speed = objectBackend.speed;
           objectLocal.backendPosition = objectBackend.position;
@@ -25,22 +27,16 @@ export const receiveData = (
       break;
     case 'keyDowns': // only main will receive these
       if (objects.current[remoteId]) {
-        const { keyDowns } = objects.current[remoteId];
-        keyDowns.splice(0, keyDowns.length);
-        keyDowns.push(...data.keyDowns);
+        objects.current[remoteId].keyDowns = data.keyDowns; // eslint-disable-line
+        // const { keyDowns } = objects.current[remoteId];
+        // keyDowns.splice(0, keyDowns.length);
+        // keyDowns.push(...data.keyDowns);
       }
       break;
     case 'setIds':
       objectIds.current.splice(0, objectIds.current.length);
       objectIds.current.push(...data.ids);
-      break;
-    case 'deleteObject': {
-      const index = objectIds.current.findIndex((x) => x === data.id);
-      if (index !== -1) objectIds.current.splice(index, 1);
-      break;
-    }
-    case 'createObject':
-      objectIds.current.push(data.id);
+      setIds(data.ids);
       break;
     case 'chatMessage': {
       const message = { ...data, userId: remoteId };
@@ -87,3 +83,21 @@ export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
   channels.ordered.forEach((x) => x.send(dataString));
   if (relay) relay.emit('data', data);
 };
+
+/*
+    case 'deleteObject': {
+      const index = objectIds.current.findIndex((x) => x === data.id);
+      if (index !== -1) objectIds.current.splice(index, 1);
+      setIds((x) => x.filter((xx) => xx !== data.id));
+      break;
+    }
+    case 'createObject':
+      if (!objectIds.current.contains(data.id)) {
+        objectIds.current.push(data.id);
+      }
+      setIds((x) => {
+        const newIds = x.contains(data.id) ? x : [...x, data.id];
+        return newIds;
+      });
+      break;
+*/

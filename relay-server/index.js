@@ -10,24 +10,26 @@ const options = {
 const io = require('socket.io')(options);
 
 let main;
+let id;
 
 io.on('connection', (socket) => {
+  if (main && main !== socket) {
+    main.emit('newPeer');
+  }
   console.log('connected:', socket.id);
+  socket.on('clientId', (clientId) => {
+    console.log('client id:', clientId);
+    id = clientId;
+  });
   socket.on('data', (data) => {
     if (socket === main) {
       socket.broadcast.emit('data', data);
     } else if (main) {
-      main.emit('data', data);
-    }
-  });
-  socket.on('message', (message) => {
-    if (socket === main) {
-      socket.broadcast.emit('message', message);
-    } else if (main) {
-      main.emit('message', message);
+      main.emit('data', data, id);
     }
   });
   socket.on('main', () => {
+    console.log('main:', socket.id);
     main = socket;
   });
   socket.on('disconnect', () => {

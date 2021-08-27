@@ -13,10 +13,22 @@ const Container = styled.div`
 `;
 
 const Sidepanel = () => {
-  const { connectionMessage } = useContext(appContext);
+  const { main, ids, connectionMessage } = useContext(appContext);
   return (
     <Container>
-      <div style={{ position: 'absolute', top: 0 }}>{connectionMessage}</div>
+      <div
+        style={{
+          flexDirection: 'column',
+          display: 'flex',
+          position: 'absolute',
+          top: 0,
+        }}
+      >
+        <div>{main ? 'you are the game host' : null}</div>
+        <div>{`players: ${ids.length}`}</div>
+        <div> {connectionMessage}</div>
+      </div>
+
       <ChatContainer />
     </Container>
   );
