@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
 import { useLoader } from '@react-three/fiber';
 import { TextureLoader } from 'three/src/loaders/TextureLoader';
-import GameObject from './Objects/GameObject';
-import Background from './Objects/Background';
+import GameObject from './GameObjects/GameObject';
+import Background from './GameObjects/Background';
 
 const GameObjects = ({ ids, id, objectIds, objects }) => {
   const [fighterImage, image1] = useLoader(TextureLoader, [
@@ -13,7 +13,7 @@ const GameObjects = ({ ids, id, objectIds, objects }) => {
   return (
     <>
       <Background map={image1} />
-      {ids.map((x, i) => (
+      {objectIds.current.map((x, i) => (
         <GameObject
           ids={ids}
           objects={objects}
@@ -27,4 +27,10 @@ const GameObjects = ({ ids, id, objectIds, objects }) => {
   );
 };
 
-export default GameObjects;
+GameObjects.displayName = 'GameObjects';
+const MemoGameObjects = memo(
+  GameObjects,
+  (prev, next) => prev.ids === next.ids,
+);
+
+export default MemoGameObjects;

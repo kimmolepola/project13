@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import Objects from './Objects';
+import Objects from './GameObjects';
 import Loop from './Loop';
 
 const GameContainer = ({

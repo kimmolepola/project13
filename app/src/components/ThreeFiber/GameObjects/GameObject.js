@@ -4,7 +4,7 @@ import { speed, rotationSpeed } from '../../../parameters';
 const GameObject = ({ ids, objects, id, map, objectId }) => (
   <mesh
     ref={(ref) => {
-      if (!objects.current[objectId]) {
+      if (ref && !objects.current[objectId]) {
         // eslint-disable-next-line no-param-reassign
         objects.current[objectId] = {
           speed,
@@ -14,15 +14,9 @@ const GameObject = ({ ids, objects, id, map, objectId }) => (
           elref: ref,
           keyDowns: [],
         };
-        console.log(
-          'new object created:',
-          objectId,
-          'creates after deletion, fix this',
-        );
       }
     }}
   >
-    {console.log('render', objectId)}
     <planeGeometry
       args={[
         Math.min(1, map.image.width / map.image.height),
