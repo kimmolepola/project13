@@ -14,6 +14,7 @@ const AppContainer = styled.div`
 `;
 
 export default function App() {
+  const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
   const [channels, setChannels] = useState({ ordered: [], unordered: [] });
   const [relay, setRelay] = useState();
@@ -37,6 +38,7 @@ export default function App() {
     const signalingSocket = connect({
       objects,
       objectIds,
+      setConnectionMessage,
       setIds,
       setId,
       setChatMessages,
@@ -81,7 +83,15 @@ export default function App() {
         />
       </Canvas>
       <AppContext.Provider
-        value={{ setChatMessages, chatMessages, channels, relay, id, remotes }}
+        value={{
+          connectionMessage,
+          setChatMessages,
+          chatMessages,
+          channels,
+          relay,
+          id,
+          remotes,
+        }}
       >
         <Sidepanel />
         <div ref={text} style={{ position: 'absolute', left: 40, top: 40 }}>

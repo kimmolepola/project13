@@ -17,6 +17,7 @@ import { receiveData } from '../messageHandler';
 const connect = ({
   objects,
   objectIds,
+  setConnectionMessage,
   setIds,
   setId,
   setChatMessages,
@@ -25,10 +26,17 @@ const connect = ({
   setRelay,
   setRemotes,
 }) => {
-  socket.on('connect', () => console.log('signaling socket connected'));
-  socket.on('disconnect', () => console.log('signaling socket disconnected'));
+  socket.on('connect', () => {
+    setConnectionMessage('signaling socket connected');
+    console.log('signaling socket connected');
+  });
+  socket.on('disconnect', () => {
+    setConnectionMessage('signaling socket disconnected');
+    console.log('signaling socket disconnected');
+  });
 
   const handleFailed = (remoteId) => {
+    setConnectionMessage(`peer ${remoteId}, using relay connection`);
     console.log('peer', remoteId, 'using relay connection');
     let main = false;
     setMain((x) => {
@@ -39,13 +47,15 @@ const connect = ({
       if (!x) {
         const relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
         relaySocket.on('connect', () => {
+          setConnectionMessage('relay socket connected');
           console.log('relay socket connected');
         });
         relaySocket.on('disconnect', () => {
+          setConnectionMessage('relay socket disconnected');
           console.log('relay socket disconnected');
         });
         relaySocket.on('data', (data) =>
-          receiveData(remoteId, data, setChatMessages, objects, objectIds),
+          receiveData(remoteId, data, setChatMessages, objectIds, objects),
         );
         relaySocket.emit('main', main);
         return relaySocket;
@@ -59,20 +69,24 @@ const connect = ({
   };
 
   const start = (remoteId) => {
+    setConnectionMessage(`peer ${remoteId}, start connecting`);
     console.log('peer', remoteId, 'start connection to remoteId');
     const pc = new RTCPeerConnection({ iceServers });
 
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'failed') {
+        setConnectionMessage(`peer ${remoteId}, connection failed`);
         console.log('peer', remoteId, 'peer connection failed');
         handleFailed(remoteId);
         objectIds.current.push(remoteId);
         setIds((x) => [...x, remoteId]);
       } else if (pc.connectionState === 'connected') {
+        setConnectionMessage(`peer ${remoteId}, connection ready`);
         console.log('peer', remoteId, 'peer connection ready');
         objectIds.current.push(remoteId);
         setIds((x) => [...x, remoteId]);
       } else if (pc.connectionState === 'closed') {
+        setConnectionMessage(`peer ${remoteId}, connection closed`);
         console.log('peer', remoteId, 'peer connection closed');
       }
     };
@@ -164,6 +178,7 @@ const connect = ({
   };
 
   socket.on('peerDisconnect', (remoteId) => {
+    setConnectionMessage(`peer ${remoteId} disconnect`);
     console.log('peer', remoteId, 'disconnect');
     delete objects.current[remoteId]; // eslint-disable-line no-param-reassign
     const index = objectIds.current.indexOf(remoteId);

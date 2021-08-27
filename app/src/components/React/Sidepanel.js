@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
 import ChatContainer from './Sidepanel/ChatContainer';
+import appContext from '../../context/appContext';
 
 const Container = styled.div`
   display: flex;
@@ -11,10 +12,14 @@ const Container = styled.div`
   background: pink;
 `;
 
-const Sidepanel = () => (
-  <Container>
-    <ChatContainer />
-  </Container>
-);
+const Sidepanel = () => {
+  const { connectionMessage } = useContext(appContext);
+  return (
+    <Container>
+      <div style={{ position: 'absolute', top: 0 }}>{connectionMessage}</div>
+      <ChatContainer />
+    </Container>
+  );
+};
 
 export default Sidepanel;
