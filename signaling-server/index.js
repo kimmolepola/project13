@@ -39,13 +39,13 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('peerDisconnect', id);
     console.log('disconnect,', id);
     delete clients[id];
-    if (main === id) {
+    if (main && main === id) {
       main = null;
       Object.keys(clients).forEach((x) => {
         if (main === null) {
           main = x;
           console.log('main:', main);
-          clients[x].emit('main');
+          clients[x].emit('main', main);
         } else {
           clients[x].emit('connectToMain', main);
         }

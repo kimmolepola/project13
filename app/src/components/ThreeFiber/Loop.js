@@ -164,8 +164,8 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
   useFrame((state, delta) => {
     if (Date.now() > nextSendTime && objects.current[id]) {
       nextSendTime =
-        Date.now() + (main === id ? sendIntervalMain : sendInterval);
-      if (main === id) {
+        Date.now() + (main && main === id ? sendIntervalMain : sendInterval);
+      if (main && main === id) {
         sendDataOnUnorderedChannels(getUpdateData(false), channels);
       } else {
         sendDataOnUnorderedChannels(getControlsData(false), channels);
@@ -173,8 +173,9 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
     }
     if (Date.now() > nextSendTimeRelay && objects.current[id]) {
       nextSendTimeRelay =
-        Date.now() + (main === id ? relaySendIntervalMain : relaySendInterval);
-      if (main === id) {
+        Date.now() +
+        (main && main === id ? relaySendIntervalMain : relaySendInterval);
+      if (main && main === id) {
         sendDataOnRelay(getUpdateData(true), relay);
       } else {
         sendDataOnRelay(getControlsData(true), relay);

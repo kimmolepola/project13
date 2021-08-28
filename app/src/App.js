@@ -29,8 +29,18 @@ export default function App() {
 
   useEffect(() => {
     const updatePeers = (idsNew) => {
-      if (main === id) {
-        const arg = { type: 'setIds', ids: idsNew };
+      if (main && main === id) {
+        const objectsNew = {};
+        objectIds.current.forEach((x) => {
+          const obj = objects.current[x];
+          if (obj) {
+            objectsNew[x] = {
+              startQuaternion: obj.elref.quaternion.toArray(),
+              startPosition: obj.elref.position.toArray(),
+            };
+          }
+        });
+        const arg = { type: 'setObjects', ids: idsNew, objects: objectsNew };
         sendDataOnOrderedChannelsAndRelay(arg, channels, relay);
       }
     };
@@ -43,7 +53,7 @@ export default function App() {
     };
     cleanup(ids);
     updatePeers(ids);
-  }, [ids]);
+  }, [ids, channels]);
 
   useEffect(() => {
     const unsubscribe = subscribeToKeyboardEvents({
@@ -119,6 +129,22 @@ export default function App() {
           hello
         </div>
       </AppContext.Provider>
+      <div
+        style={{
+          position: 'absolute',
+          top: '30%',
+          right: '30%',
+          bottom: '30%',
+          left: '30%',
+          background: 'white',
+          display:
+            main === id || relay || channels.ordered.length ? 'none' : 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <div>Connecting...</div>
+      </div>
     </AppContainer>
   );
 }

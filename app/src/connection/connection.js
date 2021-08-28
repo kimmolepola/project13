@@ -1,14 +1,4 @@
-/*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
- */
-
-/* eslint-disable no-use-before-define, no-multi-assign */
-
-import adapter from 'webrtc-adapter'; // eslint-disable-line import/no-unresolved
+import adapter from 'webrtc-adapter';
 import { io } from 'socket.io-client';
 import socket from '../services/signalingSocket';
 import iceServers from './iceServers';
@@ -49,7 +39,7 @@ const connect = ({
     if (!relaySocket) {
       relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
       relaySocket.on('newPeer', () => {
-        // to trigger network message of current ids which this new peer will need
+        // to trigger network message of current objects which this new peer will need
         setIds((xx) => [...xx]);
       });
       relaySocket.on('connect', () => {
@@ -91,18 +81,28 @@ const connect = ({
     console.log('peer', remoteId, 'starting connection');
     const pc = new RTCPeerConnection({ iceServers });
 
+    const pushIds = () => {
+      if (!objectIds.current.includes(remoteId)) {
+        objectIds.current.push(remoteId);
+      }
+      setIds((x) => {
+        if (!x.includes(remoteId)) {
+          return [...x, remoteId];
+        }
+        return x;
+      });
+    };
+
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'failed') {
         setConnectionMessage(`peer ${remoteId}, connection failed`);
         console.log('peer', remoteId, 'peer connection failed');
         handleFailed(remoteId);
-        objectIds.current.push(remoteId);
-        setIds((x) => [...x, remoteId]);
+        pushIds();
       } else if (pc.connectionState === 'connected') {
         setConnectionMessage(`peer ${remoteId}, connection ready`);
         console.log('peer', remoteId, 'peer connection ready');
-        objectIds.current.push(remoteId);
-        setIds((x) => [...x, remoteId]);
+        pushIds();
       } else if (pc.connectionState === 'closed') {
         setConnectionMessage(`peer ${remoteId}, connection closed`);
         console.log('peer', remoteId, 'peer connection closed');

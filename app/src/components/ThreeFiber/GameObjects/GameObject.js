@@ -4,9 +4,11 @@ import { speed, rotationSpeed } from '../../../parameters';
 const GameObject = ({ ids, objects, id, map, objectId }) => (
   <mesh
     ref={(ref) => {
-      if (ref && !objects.current[objectId]) {
-        // eslint-disable-next-line no-param-reassign
-        objects.current[objectId] = {
+      const obsCur = objects.current;
+      const obj = obsCur[objectId];
+      if (ref && (!obj || (obj && !obj.elref))) {
+        console.log('create ', objectId);
+        obsCur[objectId] = {
           controls: { left: 0, right: 0 },
           controlsOverChannels: { left: 0, right: 0 },
           controlsOverRelay: { left: 0, right: 0 },
@@ -16,8 +18,18 @@ const GameObject = ({ ids, objects, id, map, objectId }) => (
           backendQuaternion: [0, 0, 0, 1],
           elref: ref,
           keyDowns: [],
+          ...obj,
         };
+        const o = obsCur[objectId];
+        if (o.startPosition && o.startQuaternion) {
+          o.elref.position.set(...o.startPosition);
+          o.elref.quaternion.set(...o.startQuaternion);
+        }
       }
+      o.elref.visible = false;
+      setTimeout(() => {
+        o.elref.visible = true;
+      }, 2000);
     }}
   >
     <planeGeometry

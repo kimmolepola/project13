@@ -2,14 +2,22 @@ import { chatMessageTimeToLiveSeconds } from './parameters';
 
 export const sendDataOnRelay = (data, relay) => {
   if (relay) {
-    relay.emit('data', data);
+    try {
+      relay.emit('data', data);
+    } catch (error) {
+      console.error(error);
+    }
   }
 };
 
 export const sendDataOnUnorderedChannels = (data, channels) => {
   if (channels.unordered.length) {
     const stringData = JSON.stringify(data);
-    channels.unordered.forEach((x) => x.send(stringData));
+    try {
+      channels.unordered.forEach((x) => x.send(stringData));
+    } catch (error) {
+      console.error(error);
+    }
   }
 };
 
@@ -36,11 +44,21 @@ export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
       data = arg;
       break;
   }
+  console.log('send, channels:', channels);
   if (channels.ordered.length) {
     const dataString = JSON.stringify(data);
-    channels.ordered.forEach((x) => x.send(dataString));
+    try {
+      console.log('send channels', channels.ordered, data);
+      channels.ordered.forEach((x) => x.send(dataString));
+    } catch (error) {
+      console.error(error);
+    }
   }
-  if (relay) relay.emit('data', data);
+  try {
+    if (relay) relay.emit('data', data);
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const receiveData = (
@@ -87,11 +105,26 @@ export const receiveData = (
         /* eslint-enable */
       }
       break;
-    case 'setIds':
+    case 'setObjects': {
       objectIds.current.splice(0, objectIds.current.length);
       objectIds.current.push(...data.ids);
       setIds(data.ids);
+      const objs = objects.current;
+      data.ids.forEach((x) => {
+        const obj = objs[x];
+        const dataObj = data.objects[x];
+        if (obj && obj.elref) {
+          obj.elref.position.set(...dataObj.startPosition);
+          obj.elref.quaternion.set(...dataObj.startQuaternion);
+        } else {
+          objs[x] = {
+            startPosition: dataObj.startPosition,
+            startQuaternion: dataObj.startQuaternion,
+          };
+        }
+      });
       break;
+    }
     case 'chatMessage': {
       let main;
       setMain((x) => {
