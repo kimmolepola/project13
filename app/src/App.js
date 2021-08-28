@@ -29,7 +29,7 @@ export default function App() {
 
   useEffect(() => {
     const updatePeers = (idsNew) => {
-      if (main) {
+      if (main === id) {
         const arg = { type: 'setIds', ids: idsNew };
         sendDataOnOrderedChannelsAndRelay(arg, channels, relay);
       }

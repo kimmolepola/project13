@@ -15,22 +15,39 @@ import {
 } from '../../messageHandler';
 
 const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
+  /* eslint-disable no-param-reassign */
   const qua = new Quaternion();
   let nextSendTime = Date.now();
   let nextSendTimeRelay = Date.now();
 
+  const handleSelf = (ownObj, delta) => {
+    for (let ii = ownObj.keyDowns.length - 1; ii > -1; ii -= 1) {
+      switch (ownObj.keyDowns[ii]) {
+        case 'ArrowLeft':
+          ownObj.controls.left += delta;
+          ownObj.controlsOverChannels.left += delta;
+          ownObj.controlsOverRelay.left += delta;
+          break;
+        case 'ArrowRight':
+          ownObj.controls.right += delta;
+          ownObj.controlsOverChannels.right += delta;
+          ownObj.controlsOverRelay.right += delta;
+          break;
+        default:
+          break;
+      }
+    }
+  };
+
   const handleCamera = (state, ownRef) => {
-    /* eslint-disable no-param-reassign */
     state.camera.position.x = ownRef.position.x;
     state.camera.position.y = ownRef.position.y;
     state.camera.rotation.z = ownRef.rotation.z;
-    /* eslint-enable */
   };
 
   const handleText = (ownRef) => {
     const degree = Math.round(radiansToDegrees(-ownRef.rotation.z));
     const heading = degree < 0 ? degree + 360 : degree;
-    // eslint-disable-next-line no-param-reassign
     text.current.textContent = `
       x: ${ownRef.position.x.toFixed(0)}
       y: ${ownRef.position.y.toFixed(0)}
@@ -44,22 +61,46 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
       if (objects.current[objectIds.current[i]]) {
         const o = objects.current[objectIds.current[i]];
         if (o && o.elref) {
-          if (main || true) { // eslint-disable-line
-            for (let ii = o.keyDowns.length - 1; ii > -1; ii -= 1) {
-              switch (o.keyDowns[ii]) {
-                case 'ArrowLeft':
-                  o.elref.rotateZ(o.rotationSpeed * delta);
-                  break;
-                case 'ArrowRight':
-                  o.elref.rotateZ(-1 * o.rotationSpeed * delta);
-                  break;
-                default:
-                  break;
+          Object.keys(o.controls).forEach((x) => {
+            if (o.controls[x] > 0) {
+              const division = o.controls[x] / delta;
+              if (division >= 1) {
+                // while pressing key, if delta on user has been same or more than delta here
+                switch (x) {
+                  case 'left':
+                    o.elref.rotateZ(o.rotationSpeed * delta * o.controls[x]);
+                    break;
+                  case 'right':
+                    o.elref.rotateZ(
+                      -1 * o.rotationSpeed * delta * o.controls[x],
+                    );
+                    break;
+                  default:
+                    break;
+                }
+                o.controls[x] -= delta * o.controls[x];
+              } else {
+                // while pressing key, if delta on user has been less than delta here
+                switch (x) {
+                  case 'left':
+                    o.elref.rotateZ(
+                      o.rotationSpeed * delta * o.controls[x] * division,
+                    );
+                    break;
+                  case 'right':
+                    o.elref.rotateZ(
+                      -1 * o.rotationSpeed * delta * o.controls[x] * division,
+                    );
+                    break;
+                  default:
+                    break;
+                }
+                o.controls[x] -= delta * division;
               }
             }
-            o.elref.translateY(o.speed * delta);
-          }
-          if (!main) {
+          });
+          o.elref.translateY(o.speed * delta);
+          if (main !== id) {
             o.elref.position.lerp(o.backendPosition, interpolationAlpha);
             o.elref.quaternion.slerp(
               qua.fromArray(o.backendQuaternion),
@@ -71,7 +112,7 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
     }
   };
 
-  const getUpdateData = () => {
+  const getUpdateData = (viaRelay) => {
     const data = { type: 'update', update: {} };
     objectIds.current.forEach((oid) => {
       const o =
@@ -80,48 +121,74 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
           : undefined;
       if (o) {
         data.update[oid] = {
-          keyDowns: o.keyDowns,
+          controlsOverNetwork: viaRelay
+            ? o.controlsOverRelay
+            : o.controlsOverChannels,
           position: o.elref.position,
           quaternion: o.elref.quaternion.toArray(),
           speed: o.speed,
           rotationSpeed: o.rotationSpeed,
         };
+        if (viaRelay) {
+          o.controlsOverRelay = { left: 0, right: 0 }; // reset
+        } else {
+          o.controlsOverChannels = { left: 0, right: 0 }; // reset
+        }
       }
     });
     return data;
   };
 
-  const getKeyDownsData = () => ({
-    type: 'keyDowns',
-    keyDowns: objects.current[id].keyDowns,
-  });
+  const getControlsData = (viaRelay) => {
+    const controlsData = {
+      type: 'controlsOverNetwork',
+      controlsOverNetwork: {
+        left: viaRelay
+          ? objects.current[id].controlsOverRelay.left
+          : objects.current[id].controlsOverChannels.left,
+        right: viaRelay
+          ? objects.current[id].controlsOverRelay.right
+          : objects.current[id].controlsOverChannels.right,
+      },
+    };
+    if (viaRelay) {
+      objects.current[id].controlsOverRelay.left = 0; // reset
+      objects.current[id].controlsOverRelay.right = 0; // reset
+    } else {
+      objects.current[id].controlsOverChannels.left = 0; // reset
+      objects.current[id].controlsOverChannels.right = 0; // reset
+    }
+    return controlsData;
+  };
 
   useFrame((state, delta) => {
     if (Date.now() > nextSendTime && objects.current[id]) {
-      nextSendTime = Date.now() + (main ? sendIntervalMain : sendInterval);
-      if (main) {
-        sendDataOnUnorderedChannels(getUpdateData(), channels);
+      nextSendTime =
+        Date.now() + (main === id ? sendIntervalMain : sendInterval);
+      if (main === id) {
+        sendDataOnUnorderedChannels(getUpdateData(false), channels);
       } else {
-        sendDataOnUnorderedChannels(getKeyDownsData(), channels);
+        sendDataOnUnorderedChannels(getControlsData(false), channels);
       }
     }
     if (Date.now() > nextSendTimeRelay && objects.current[id]) {
       nextSendTimeRelay =
-        Date.now() + (main ? relaySendIntervalMain : relaySendInterval);
-      if (main) {
-        sendDataOnRelay(getUpdateData(), relay);
+        Date.now() + (main === id ? relaySendIntervalMain : relaySendInterval);
+      if (main === id) {
+        sendDataOnRelay(getUpdateData(true), relay);
       } else {
-        sendDataOnRelay(getKeyDownsData(), relay);
+        sendDataOnRelay(getControlsData(true), relay);
       }
     }
 
     const ownRef = objects.current[id] ? objects.current[id].elref : undefined;
 
-    handleObjects(delta);
     if (ownRef && ownRef.position) {
+      handleSelf(objects.current[id], delta);
       handleCamera(state, ownRef);
       handleText(ownRef);
     }
+    handleObjects(delta);
   });
   return <></>;
 };

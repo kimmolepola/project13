@@ -7,6 +7,9 @@ const GameObject = ({ ids, objects, id, map, objectId }) => (
       if (ref && !objects.current[objectId]) {
         // eslint-disable-next-line no-param-reassign
         objects.current[objectId] = {
+          controls: { left: 0, right: 0 },
+          controlsOverChannels: { left: 0, right: 0 },
+          controlsOverRelay: { left: 0, right: 0 },
           speed,
           rotationSpeed,
           backendPosition: { x: 0, y: 0, z: 1 },

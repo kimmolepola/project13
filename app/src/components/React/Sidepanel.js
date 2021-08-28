@@ -13,7 +13,7 @@ const Container = styled.div`
 `;
 
 const Sidepanel = () => {
-  const { main, ids, connectionMessage } = useContext(appContext);
+  const { id, main, ids, connectionMessage } = useContext(appContext);
   return (
     <Container>
       <div
@@ -24,7 +24,7 @@ const Sidepanel = () => {
           top: 0,
         }}
       >
-        <div>{main ? 'you are the game host' : null}</div>
+        <div>{main && main === id ? 'you are the game host' : null}</div>
         <div>{`players: ${ids.length}`}</div>
         <div> {connectionMessage}</div>
       </div>

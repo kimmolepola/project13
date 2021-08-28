@@ -10,9 +10,9 @@ const options = {
 const io = require('socket.io')(options);
 
 let main;
-let id;
 
 io.on('connection', (socket) => {
+  let id;
   if (main && main !== socket) {
     main.emit('newPeer');
   }
@@ -23,7 +23,7 @@ io.on('connection', (socket) => {
   });
   socket.on('data', (data) => {
     if (socket === main) {
-      socket.broadcast.emit('data', data);
+      socket.broadcast.emit('data', data, id);
     } else if (main) {
       main.emit('data', data, id);
     }

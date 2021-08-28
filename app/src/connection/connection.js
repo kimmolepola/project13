@@ -27,7 +27,7 @@ const connect = ({
   setRemotes,
 }) => {
   let ownId;
-  let main = false;
+  let main;
 
   socket.on('connect', () => {
     setConnectionMessage('signaling socket connected');
@@ -41,40 +41,45 @@ const connect = ({
   const handleFailed = (remoteId) => {
     setConnectionMessage(`peer ${remoteId}, using relay connection`);
     console.log('peer', remoteId, 'using relay connection');
+    let relaySocket;
     setRelay((x) => {
-      if (!x) {
-        const relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
-        relaySocket.on('newPeer', () => {
-          // to trigger network message of current ids which this new peer will need
-          setIds((xx) => [...xx]);
-        });
-        relaySocket.on('connect', () => {
-          relaySocket.emit('clientId', ownId);
-          if (main) {
-            relaySocket.emit('main');
-          }
-          setConnectionMessage('relay socket connected');
-          console.log('relay socket connected');
-        });
-        relaySocket.on('disconnect', () => {
-          setConnectionMessage('relay socket disconnected');
-          console.log('relay socket disconnected');
-        });
-        relaySocket.on('data', (data, clientId) =>
-          receiveData(
-            clientId,
-            data,
-            setChatMessages,
-            objectIds,
-            objects,
-            setIds,
-            ownId,
-          ),
-        );
-        return relaySocket;
-      }
+      relaySocket = x;
       return x;
     });
+    if (!relaySocket) {
+      relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
+      relaySocket.on('newPeer', () => {
+        // to trigger network message of current ids which this new peer will need
+        setIds((xx) => [...xx]);
+      });
+      relaySocket.on('connect', () => {
+        relaySocket.emit('clientId', ownId);
+        if (main === ownId) {
+          relaySocket.emit('main');
+        }
+        setConnectionMessage('relay socket connected');
+        console.log('relay socket connected');
+      });
+      relaySocket.on('disconnect', () => {
+        setConnectionMessage('relay socket disconnected');
+        console.log('relay socket disconnected');
+      });
+      relaySocket.on('data', (data, clientId) =>
+        receiveData(
+          clientId,
+          data,
+          setChatMessages,
+          objectIds,
+          objects,
+          setIds,
+          ownId,
+          setChannels,
+          setRelay,
+          setMain,
+        ),
+      );
+    }
+    setRelay(relaySocket);
     setRemotes((x) => ({
       ...x,
       [remoteId]: { ...x[remoteId], relaySocket: true },
@@ -154,6 +159,9 @@ const connect = ({
         objects,
         setIds,
         ownId,
+        setChannels,
+        setRelay,
+        setMain,
       );
     };
 
@@ -180,6 +188,9 @@ const connect = ({
         objects,
         setIds,
         ownId,
+        setChannels,
+        setRelay,
+        setMain,
       );
     };
 
@@ -201,33 +212,40 @@ const connect = ({
     const index = objectIds.current.indexOf(remoteId);
     if (index !== -1) objectIds.current.splice(index, 1);
     setIds((x) => x.filter((xx) => xx !== remoteId));
-    let newRemotes;
+    let remotes;
     setRemotes((x) => {
-      if (x[remoteId]) x[remoteId].pc.close();
-      newRemotes = { ...x };
-      delete newRemotes[remoteId];
-      return newRemotes;
-    });
-    setRelay((x) => {
-      if (x && !Object.keys(newRemotes).find((xx) => xx.relaySocket)) {
-        x.disconnect();
-        return undefined;
-      }
+      remotes = x;
       return x;
     });
+    if (remotes[remoteId]) remotes[remoteId].pc.close();
+    const newRemotes = { ...remotes };
+    delete newRemotes[remoteId];
+    setRemotes(newRemotes);
+    let relay;
+    setRelay((x) => {
+      relay = x;
+      return x;
+    });
+    if (relay && !Object.keys(newRemotes).find((xx) => xx.relaySocket)) {
+      relay.disconnect();
+      setRelay(undefined);
+    }
   });
 
   socket.on('connectToMain', (remoteId) => {
+    setMain(remoteId);
     start(remoteId);
   });
 
-  socket.on('main', () => {
-    main = true;
-    setMain(true);
+  socket.on('main', (arg) => {
+    main = arg;
+    setMain(arg);
+    let relay;
     setRelay((x) => {
-      if (x) x.emit('main', true);
+      relay = x;
       return x;
     });
+    if (relay) relay.emit('main', true);
     console.log('you are main');
   });
 

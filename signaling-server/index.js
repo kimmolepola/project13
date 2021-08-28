@@ -20,7 +20,7 @@ io.on('connection', (socket) => {
   if (!main) {
     main = id;
     console.log('main:', main);
-    socket.emit('main');
+    socket.emit('main', main);
   } else {
     socket.emit('connectToMain', main);
   }
