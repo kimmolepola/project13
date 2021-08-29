@@ -62,7 +62,11 @@ export default function Chat() {
           <Divider
             style={{ display: index !== chatMessages.length - 1 ? '' : 'none' }}
           />
-          <Message style={{ background: x.userId === id ? 'yellow' : 'none' }}>
+          <Message
+            style={{
+              background: x.userId === id ? 'DarkKhaki' : 'none',
+            }}
+          >
             <Text>
               {x.userId}: {x.chatMessage}
             </Text>

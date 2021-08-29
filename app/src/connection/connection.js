@@ -19,6 +19,28 @@ const connect = ({
   let ownId;
   let main;
 
+  const handleDeleteId = (delId) => {
+    const objs = objects.current;
+    delete objs[delId];
+    const index = objectIds.current.indexOf(delId);
+    if (index !== -1) objectIds.current.splice(index, 1);
+    setIds((x) => x.filter((xx) => xx !== delId));
+  };
+
+  const handleNewId = (newId) => {
+    if (main && main === ownId) {
+      if (!objectIds.current.includes(newId)) {
+        objectIds.current.push(newId);
+      }
+      setIds((x) => {
+        if (!x.includes(newId)) {
+          return [...x, newId];
+        }
+        return x;
+      });
+    }
+  };
+
   socket.on('connect', () => {
     setConnectionMessage('signaling socket connected');
     console.log('signaling socket connected');
@@ -81,28 +103,16 @@ const connect = ({
     console.log('peer', remoteId, 'starting connection');
     const pc = new RTCPeerConnection({ iceServers });
 
-    const pushIds = () => {
-      if (!objectIds.current.includes(remoteId)) {
-        objectIds.current.push(remoteId);
-      }
-      setIds((x) => {
-        if (!x.includes(remoteId)) {
-          return [...x, remoteId];
-        }
-        return x;
-      });
-    };
-
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'failed') {
         setConnectionMessage(`peer ${remoteId}, connection failed`);
         console.log('peer', remoteId, 'peer connection failed');
         handleFailed(remoteId);
-        pushIds();
+        handleNewId(remoteId);
       } else if (pc.connectionState === 'connected') {
         setConnectionMessage(`peer ${remoteId}, connection ready`);
         console.log('peer', remoteId, 'peer connection ready');
-        pushIds();
+        handleNewId(remoteId);
       } else if (pc.connectionState === 'closed') {
         setConnectionMessage(`peer ${remoteId}, connection closed`);
         console.log('peer', remoteId, 'peer connection closed');
@@ -208,10 +218,7 @@ const connect = ({
   socket.on('peerDisconnect', (remoteId) => {
     setConnectionMessage(`peer ${remoteId} disconnect`);
     console.log('peer', remoteId, 'disconnect');
-    delete objects.current[remoteId]; // eslint-disable-line no-param-reassign
-    const index = objectIds.current.indexOf(remoteId);
-    if (index !== -1) objectIds.current.splice(index, 1);
-    setIds((x) => x.filter((xx) => xx !== remoteId));
+    handleDeleteId(remoteId);
     let remotes;
     setRemotes((x) => {
       remotes = x;
@@ -246,14 +253,13 @@ const connect = ({
       return x;
     });
     if (relay) relay.emit('main', true);
+    handleNewId(main);
     console.log('you are main');
   });
 
   socket.on('init', (clientId) => {
     ownId = clientId;
     setId(clientId);
-    objectIds.current.push(clientId);
-    setIds((x) => [...x, clientId]);
     console.log('own id:', clientId);
   });
 

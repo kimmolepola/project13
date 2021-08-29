@@ -7,6 +7,7 @@ const GameObject = ({ ids, objects, id, map, objectId }) => (
       const obsCur = objects.current;
       const obj = obsCur[objectId];
       if (ref && (!obj || (obj && !obj.elref))) {
+        console.log('create, obj:', obj);
         console.log('create ', objectId);
         obsCur[objectId] = {
           controls: { left: 0, right: 0 },
@@ -26,10 +27,6 @@ const GameObject = ({ ids, objects, id, map, objectId }) => (
           o.elref.quaternion.set(...o.startQuaternion);
         }
       }
-      o.elref.visible = false;
-      setTimeout(() => {
-        o.elref.visible = true;
-      }, 2000);
     }}
   >
     <planeGeometry

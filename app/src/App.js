@@ -53,7 +53,7 @@ export default function App() {
     };
     cleanup(ids);
     updatePeers(ids);
-  }, [ids, channels]);
+  }, [ids, channels, relay]);
 
   useEffect(() => {
     const unsubscribe = subscribeToKeyboardEvents({
@@ -124,27 +124,27 @@ export default function App() {
           remotes,
         }}
       >
+        <div
+          style={{
+            position: 'absolute',
+            top: '35%',
+            right: '38%',
+            bottom: '35%',
+            left: '10%',
+            background: 'white',
+            display:
+              main === id || relay || channels.ordered.length ? 'none' : 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <div>Connecting...</div>
+        </div>
         <Sidepanel />
         <div ref={text} style={{ position: 'absolute', left: 40, top: 40 }}>
           hello
         </div>
       </AppContext.Provider>
-      <div
-        style={{
-          position: 'absolute',
-          top: '30%',
-          right: '30%',
-          bottom: '30%',
-          left: '30%',
-          background: 'white',
-          display:
-            main === id || relay || channels.ordered.length ? 'none' : 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <div>Connecting...</div>
-      </div>
     </AppContainer>
   );
 }

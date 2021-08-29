@@ -4,10 +4,14 @@ import theme from '../../../../theme';
 import appContext from '../../../../context/appContext';
 import { sendDataOnOrderedChannelsAndRelay } from '../../../../messageHandler';
 
-const Container = styled.div``;
-
-const InputField = styled.input`
-  padding-left: 6px;
+const Button = styled.button`
+  width: 12%;
+  min-width: 22px;
+  color: ${theme.colors.verylight};
+  background: RoyalBlue;
+  box-shadow: ${theme.shadow};
+  border: ${theme.borderWidth} solid ${theme.colors.light};
+  border-radius: ${theme.borderRadius};
   :focus {
     border-color: ${theme.colors.strong};
     outline: none;
@@ -15,10 +19,21 @@ const InputField = styled.input`
   :hover:not(:focus) {
     border-color: ${theme.colors.medium};
   }
+`;
+
+const InputField = styled.input`
+  min-width: 100px;
+  padding-left: 6px;
   box-shadow: ${theme.shadow};
   border: ${theme.borderWidth} solid ${theme.colors.light};
   border-radius: ${theme.borderRadius};
-  height: 30px;
+  :focus {
+    border-color: ${theme.colors.strong};
+    outline: none;
+  }
+  :hover:not(:focus) {
+    border-color: ${theme.colors.medium};
+  }
   ::placeholder {
     /* Chrome, Firefox, Opera, Safari 10.1+ */
     color: lightgrey;
@@ -33,7 +48,10 @@ const InputField = styled.input`
 
 const InputForm = styled.form`
   display: flex;
+  height: 30px;
 `;
+
+const Container = styled.div``;
 
 export default function ChatInputForm() {
   const [inputValue, setInputValue] = useState('');
@@ -73,6 +91,7 @@ export default function ChatInputForm() {
             e.target.placeholder = 'Input';
           }}
         />
+        <Button>&#9166;</Button>
       </InputForm>
     </Container>
   );

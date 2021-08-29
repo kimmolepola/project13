@@ -44,7 +44,7 @@ export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
       data = arg;
       break;
   }
-  console.log('send, channels:', channels);
+  console.log('send, channels:', channels, relay);
   if (channels.ordered.length) {
     const dataString = JSON.stringify(data);
     try {
@@ -114,9 +114,12 @@ export const receiveData = (
         const obj = objs[x];
         const dataObj = data.objects[x];
         if (obj && obj.elref) {
+          console.log('object yes, set');
           obj.elref.position.set(...dataObj.startPosition);
           obj.elref.quaternion.set(...dataObj.startQuaternion);
+          console.log(x, obj.elref.position, objects.current[x].elref.position);
         } else {
+          console.log('object no');
           objs[x] = {
             startPosition: dataObj.startPosition,
             startQuaternion: dataObj.startQuaternion,

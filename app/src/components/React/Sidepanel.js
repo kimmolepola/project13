@@ -2,12 +2,14 @@ import React, { useContext } from 'react';
 import styled from 'styled-components';
 import ChatContainer from './Sidepanel/ChatContainer';
 import appContext from '../../context/appContext';
+import theme from '../../theme';
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  width: 300px;
+  max-width: ${theme.sidepanelMaxWidth};
+  width: ${theme.sidepanelWidth};
   padding: 3px;
   background: pink;
 `;
