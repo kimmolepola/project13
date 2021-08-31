@@ -11,7 +11,7 @@ const Container = styled.div`
   border-radius: ${theme.borderRadius};
   display: flex;
   flex-direction: column-reverse;
-  height: 33%;
+  height: 65%;
 `;
 
 const ChatContainer = () => (

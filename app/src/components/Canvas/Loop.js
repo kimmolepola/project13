@@ -23,12 +23,12 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
   const handleSelf = (ownObj, delta) => {
     for (let ii = ownObj.keyDowns.length - 1; ii > -1; ii -= 1) {
       switch (ownObj.keyDowns[ii]) {
-        case 'ArrowLeft':
+        case 'left':
           ownObj.controls.left += delta;
           ownObj.controlsOverChannels.left += delta;
           ownObj.controlsOverRelay.left += delta;
           break;
-        case 'ArrowRight':
+        case 'right':
           ownObj.controls.right += delta;
           ownObj.controlsOverChannels.right += delta;
           ownObj.controlsOverRelay.right += delta;

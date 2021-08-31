@@ -22,7 +22,7 @@ const Button = styled.button`
 `;
 
 const InputField = styled.input`
-  min-width: 100px;
+  min-width: 40px;
   padding-left: 6px;
   box-shadow: ${theme.shadow};
   border: ${theme.borderWidth} solid ${theme.colors.light};

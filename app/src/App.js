@@ -1,20 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
-import styled from 'styled-components';
-import Sidepanel from './components/React/Sidepanel';
-import GameContainer from './components/ThreeFiber/GameContainer';
+import Canvas from './components/Canvas';
 import AppContext from './context/appContext';
 import connect from './connection/connection';
-import subscribeToKeyboardEvents from './keyboardEvents';
+import { subscribeToKeyboardEvents } from './controls';
 import { sendDataOnOrderedChannelsAndRelay } from './messageHandler';
+import UI from './components/UI';
 
-const AppContainer = styled.div`
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-`;
-
-export default function App() {
+const App = () => {
   const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
   const [channels, setChannels] = useState({ ordered: [], unordered: [] });
@@ -25,7 +17,7 @@ export default function App() {
   const [ids, setIds] = useState([]);
   const objects = useRef({});
   const objectIds = useRef([]);
-  const text = useRef({});
+  const text = useRef();
 
   useEffect(() => {
     const updatePeers = (idsNew) => {
@@ -64,6 +56,7 @@ export default function App() {
   }, [id]);
 
   useEffect(() => {
+    console.log(text);
     const signalingSocket = connect({
       objects,
       objectIds,
@@ -88,31 +81,20 @@ export default function App() {
   }, []);
 
   return (
-    <AppContainer>
+    <>
       <Canvas
-        onCreated={(state) => {
-          state.gl.setClearColor('lightyellow');
-        }}
-        camera={{
-          fov: 75,
-          near: 5,
-          far: 11,
-          position: [0, 0, 10],
-        }}
-      >
-        <GameContainer
-          ids={ids}
-          relay={relay}
-          channels={channels}
-          main={main}
-          id={id}
-          objectIds={objectIds}
-          objects={objects}
-          text={text}
-        />
-      </Canvas>
+        ids={ids}
+        relay={relay}
+        channels={channels}
+        main={main}
+        id={id}
+        objectIds={objectIds}
+        objects={objects}
+        text={text}
+      />
       <AppContext.Provider
         value={{
+          objects,
           main,
           ids,
           connectionMessage,
@@ -122,29 +104,13 @@ export default function App() {
           relay,
           id,
           remotes,
+          text,
         }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            top: '35%',
-            right: '38%',
-            bottom: '35%',
-            left: '10%',
-            background: 'white',
-            display:
-              main === id || relay || channels.ordered.length ? 'none' : 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <div>Connecting...</div>
-        </div>
-        <Sidepanel />
-        <div ref={text} style={{ position: 'absolute', left: 40, top: 40 }}>
-          hello
-        </div>
+        <UI />
       </AppContext.Provider>
-    </AppContainer>
+    </>
   );
-}
+};
+
+export default App;

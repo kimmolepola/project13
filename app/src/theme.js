@@ -1,6 +1,7 @@
 const theme = {
-  sidepanelMaxWidth: '340px',
-  sidepanelWidth: '33%',
+  mobileWidth: 600,
+  sidepanelWidthPercent: 30,
+  sidepanelMaxWidth: '300px',
   colors: {
     strong: 'lightblue',
     medium: '#A0A0A0',
