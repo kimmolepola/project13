@@ -82,9 +82,6 @@ const CanvasOverlay = () => {
   return (
     <Container windowHeight={windowHeight}>
       <Infotext ref={text} />
-      <div style={{ position: 'absolute', top: 80, left: 80 }}>
-        height: {windowHeight}
-      </div>
       <Controls>
         <ControlButton control="left" />
         <ControlButton control="right" />
