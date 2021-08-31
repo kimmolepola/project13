@@ -80,7 +80,7 @@ export default function ChatInputForm() {
         autoComplete="off"
       >
         <InputField
-          type="search"
+          type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Input"

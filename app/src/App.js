@@ -1,24 +1,39 @@
-import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import debounce from 'lodash.debounce';
 import Canvas from './components/Canvas';
 import AppContext from './context/appContext';
 import connect from './connection/connection';
 import { subscribeToKeyboardEvents } from './controls';
 import { sendDataOnOrderedChannelsAndRelay } from './messageHandler';
 import UI from './components/UI';
-import theme from './theme';
 
-const Container = styled.div`
-  height: ${window.innerHeight}px;
-  widht: 100vw;
-  display: flex;
-  flex-direction: column;
-  @media (min-width: ${theme.mobileWidth}px) {
-    flex-direction: row;
+const updatePeers = (idsNew, main, id, objectIds, objects, channels, relay) => {
+  if (main && main === id) {
+    const objectsNew = {};
+    objectIds.current.forEach((x) => {
+      const obj = objects.current[x];
+      if (obj) {
+        objectsNew[x] = {
+          startQuaternion: obj.elref.quaternion.toArray(),
+          startPosition: obj.elref.position.toArray(),
+        };
+      }
+    });
+    const arg = { type: 'setObjects', ids: idsNew, objects: objectsNew };
+    sendDataOnOrderedChannelsAndRelay(arg, channels, relay);
   }
-`;
+};
+const cleanup = (idsNew, objects) => {
+  const objectsNew = {};
+  idsNew.forEach((x) => {
+    objectsNew[x] = objects.current[x];
+  });
+  // eslint-disable-next-line no-param-reassign
+  objects.current = objectsNew;
+};
 
 const App = () => {
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
   const [channels, setChannels] = useState({ ordered: [], unordered: [] });
@@ -31,32 +46,17 @@ const App = () => {
   const objectIds = useRef([]);
   const text = useRef();
 
+  const resizeHandler = () => {
+    setWindowHeight(window.innerHeight);
+  };
+
+  const debounceResizeHandler = useMemo(() => debounce(resizeHandler, 300), []);
+
+  window.onresize = debounceResizeHandler;
+
   useEffect(() => {
-    const updatePeers = (idsNew) => {
-      if (main && main === id) {
-        const objectsNew = {};
-        objectIds.current.forEach((x) => {
-          const obj = objects.current[x];
-          if (obj) {
-            objectsNew[x] = {
-              startQuaternion: obj.elref.quaternion.toArray(),
-              startPosition: obj.elref.position.toArray(),
-            };
-          }
-        });
-        const arg = { type: 'setObjects', ids: idsNew, objects: objectsNew };
-        sendDataOnOrderedChannelsAndRelay(arg, channels, relay);
-      }
-    };
-    const cleanup = (idsNew) => {
-      const objectsNew = {};
-      idsNew.forEach((x) => {
-        objectsNew[x] = objects.current[x];
-      });
-      objects.current = objectsNew;
-    };
-    cleanup(ids);
-    updatePeers(ids);
+    cleanup(ids, objects);
+    updatePeers(ids, main, id, objectIds, objects, channels, relay);
   }, [ids, channels, relay]);
 
   useEffect(() => {
@@ -68,7 +68,6 @@ const App = () => {
   }, [id]);
 
   useEffect(() => {
-    console.log(text);
     const signalingSocket = connect({
       objects,
       objectIds,
@@ -95,6 +94,7 @@ const App = () => {
   return (
     <>
       <Canvas
+        windowHeight={windowHeight}
         ids={ids}
         relay={relay}
         channels={channels}
@@ -106,6 +106,7 @@ const App = () => {
       />
       <AppContext.Provider
         value={{
+          windowHeight,
           objects,
           main,
           ids,

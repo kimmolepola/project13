@@ -46,7 +46,7 @@ const Container = styled.div`
   right: 0px;
   bottom: min(
     ${theme.sidepanelMaxWidth},
-    ${(window.innerHeight / 100) * theme.sidepanelWidthPercent}px
+    ${(props) => (props.windowHeight / 100) * theme.sidepanelWidthPercent}px
   );
   left: 0px;
   @media (min-width: ${theme.mobileWidth}px) {
@@ -57,7 +57,7 @@ const Container = styled.div`
 `;
 
 const CanvasOverlay = () => {
-  const { id, objects, text } = useContext(appContext);
+  const { windowHeight, id, objects, text } = useContext(appContext);
 
   const ControlButton = ({ control }) => (
     <Button
@@ -80,8 +80,11 @@ const CanvasOverlay = () => {
   );
 
   return (
-    <Container>
+    <Container windowHeight={windowHeight}>
       <Infotext ref={text} />
+      <div style={{ position: 'absolute', top: 80, left: 80 }}>
+        height: {windowHeight}
+      </div>
       <Controls>
         <ControlButton control="left" />
         <ControlButton control="right" />

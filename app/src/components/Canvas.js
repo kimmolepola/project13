@@ -11,7 +11,7 @@ const Container = styled.div`
   right: 0px;
   bottom: min(
     ${theme.sidepanelMaxWidth},
-    ${(window.innerHeight / 100) * theme.sidepanelWidthPercent}px
+    ${(props) => (props.windowHeight / 100) * theme.sidepanelWidthPercent}px
   );
   left: 0px;
   @media (min-width: ${theme.mobileWidth}px) {
@@ -21,6 +21,7 @@ const Container = styled.div`
 `;
 
 const CanvasContainer = ({
+  windowHeight,
   ids,
   relay,
   channels,
@@ -30,7 +31,7 @@ const CanvasContainer = ({
   objects,
   text,
 }) => (
-  <Container>
+  <Container windowHeight={windowHeight}>
     <Canvas
       camera={{
         fov: 75,
@@ -39,6 +40,7 @@ const CanvasContainer = ({
         position: [0, 0, 10],
       }}
     >
+      <color attach="background" args={['bisque']} />
       <Loop
         relay={relay}
         channels={channels}

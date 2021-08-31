@@ -16,10 +16,10 @@ const InfoBox = styled.div`
 const Container = styled.div`
   position: absolute;
   top: calc(
-    ${window.innerHeight}px -
+    ${(props) => props.windowHeight}px -
       min(
         ${theme.sidepanelMaxWidth},
-        ${(window.innerHeight / 100) * theme.sidepanelWidthPercent}px
+        ${(props) => (props.windowHeight / 100) * theme.sidepanelWidthPercent}px
       )
   );
   right: 0px;
@@ -39,10 +39,11 @@ const Container = styled.div`
 `;
 
 const Sidepanel = () => {
-  const { id, main, ids, connectionMessage } = useContext(appContext);
+  const { windowHeight, id, main, ids, connectionMessage } =
+    useContext(appContext);
 
   return (
-    <Container>
+    <Container windowHeight={windowHeight}>
       <InfoBox>
         <div>{main && main === id ? 'you are the game host' : null}</div>
         <div>{`players: ${ids.length}`}</div>
