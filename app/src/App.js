@@ -1,10 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
+import styled from 'styled-components';
 import Canvas from './components/Canvas';
 import AppContext from './context/appContext';
 import connect from './connection/connection';
 import { subscribeToKeyboardEvents } from './controls';
 import { sendDataOnOrderedChannelsAndRelay } from './messageHandler';
 import UI from './components/UI';
+import theme from './theme';
+
+const Container = styled.div`
+  height: ${window.innerHeight}px;
+  widht: 100vw;
+  display: flex;
+  flex-direction: column;
+  @media (min-width: ${theme.mobileWidth}px) {
+    flex-direction: row;
+  }
+`;
 
 const App = () => {
   const [connectionMessage, setConnectionMessage] = useState();

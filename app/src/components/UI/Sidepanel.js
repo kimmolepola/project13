@@ -5,6 +5,7 @@ import appContext from '../../context/appContext';
 import theme from '../../theme';
 
 const InfoBox = styled.div`
+  color: ${theme.colors.medium};
   background: white;
   padding: 2px;
   font-family: Arial, Helvetica, sans-serif;
@@ -13,24 +14,28 @@ const InfoBox = styled.div`
 `;
 
 const Container = styled.div`
-  display: flex;
   position: absolute;
   top: calc(
-    100vh - min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}vh)
+    ${window.innerHeight}px -
+      min(
+        ${theme.sidepanelMaxWidth},
+        ${(window.innerHeight / 100) * theme.sidepanelWidthPercent}px
+      )
   );
   right: 0px;
   bottom: 0px;
   left: 0px;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 3px;
-  background: pink;
   @media (min-width: ${theme.mobileWidth}px) {
     top: 0px;
     left: calc(
       100vw - min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}vw)
     );
   }
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3px;
+  background: mistyrose;
 `;
 
 const Sidepanel = () => {
@@ -49,3 +54,20 @@ const Sidepanel = () => {
 };
 
 export default Sidepanel;
+
+/*
+  position: absolute;
+  top: calc(
+    100vh - min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}%)
+  );
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+    @media (min-width: ${theme.mobileWidth}px) {
+    top: 0px;
+    left: calc(
+      100vw - min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}vw)
+    );
+  }
+
+*/

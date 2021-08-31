@@ -9,7 +9,10 @@ const Container = styled.div`
   position: absolute;
   top: 0px;
   right: 0px;
-  bottom: min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}vh);
+  bottom: min(
+    ${theme.sidepanelMaxWidth},
+    ${(window.innerHeight / 100) * theme.sidepanelWidthPercent}px
+  );
   left: 0px;
   @media (min-width: ${theme.mobileWidth}px) {
     right: min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}vw);
@@ -53,3 +56,15 @@ const CanvasContainer = ({
 );
 
 export default CanvasContainer;
+
+/*
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}%);
+  left: 0px;
+  @media (min-width: ${theme.mobileWidth}px) {
+    right: min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}vw);
+    bottom: 0px;
+  }
+*/

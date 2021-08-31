@@ -7,8 +7,8 @@ import { handlePressed, handleReleased } from '../../controls';
 const Infotext = styled.div`
   text-shadow: white 0 0 1px;
   position: absolute;
-  left: 40px;
-  top: 40px;
+  left: 20px;
+  top: 20px;
 `;
 
 const Controls = styled.div`
@@ -22,25 +22,32 @@ const Controls = styled.div`
 `;
 
 const Button = styled.button`
+  display: flex;
   opacity: 85%;
   color: royalblue;
   border-color: royalblue;
   align-items: center;
   justify-content: center;
-  display: flex;
-  font-size: 30px;
+  font-size: 22px;
   border-radius: 50%;
   margin: 7mm;
   width: 1cm;
   height: 1cm;
   background: transparent;
+  -webkit-user-select: none; /* Chrome all / Safari all */
+  -moz-user-select: none; /* Firefox all */
+  -ms-user-select: none; /* IE 10+ */
+  user-select: none; /* Likely future */
 `;
 
 const Container = styled.div`
   position: absolute;
   top: 0px;
   right: 0px;
-  bottom: min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}vh);
+  bottom: min(
+    ${theme.sidepanelMaxWidth},
+    ${(window.innerHeight / 100) * theme.sidepanelWidthPercent}px
+  );
   left: 0px;
   @media (min-width: ${theme.mobileWidth}px) {
     right: min(${theme.sidepanelMaxWidth}, ${theme.sidepanelWidthPercent}vw);
@@ -62,9 +69,9 @@ const CanvasOverlay = () => {
       {(() => {
         switch (control) {
           case 'left':
-            return '\u21E6';
+            return '\u2039';
           case 'right':
-            return '\u21E8';
+            return '\u203A';
           default:
             return null;
         }
@@ -84,3 +91,5 @@ const CanvasOverlay = () => {
 };
 
 export default CanvasOverlay;
+
+// return '\u21E6';

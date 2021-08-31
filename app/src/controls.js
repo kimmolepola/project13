@@ -1,13 +1,14 @@
 export const handlePressed = (key, id, objects) => {
-  console.log('key:', key);
-  if (!objects.current[id].keyDowns.includes(key)) {
+  if (objects.current[id] && !objects.current[id].keyDowns.includes(key)) {
     objects.current[id].keyDowns.push(key);
   }
 };
 
 export const handleReleased = (key, id, objects) => {
-  const index = objects.current[id].keyDowns.findIndex((x) => x === key);
-  if (index !== -1) objects.current[id].keyDowns.splice(index, 1);
+  if (objects.current[id]) {
+    const index = objects.current[id].keyDowns.findIndex((x) => x === key);
+    if (index !== -1) objects.current[id].keyDowns.splice(index, 1);
+  }
 };
 
 const convertKeyToControl = (key) => {
