@@ -1,10 +1,12 @@
 import React, { memo } from 'react';
 
 const BackgroundComponent = ({ map }) => (
-  <mesh>
-    <planeGeometry args={[map.image.width / 2, map.image.height / 2]} />
-    <meshBasicMaterial map={map} />
-  </mesh>
+  <>
+    <mesh>
+      <planeGeometry args={[map.image.width, map.image.height]} />
+      <meshBasicMaterial color="#e5e4e2" map={map} />
+    </mesh>
+  </>
 );
 
 BackgroundComponent.displayName = 'BackgroundComponent';
