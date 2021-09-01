@@ -43,6 +43,7 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
     state.camera.position.x = ownRef.position.x;
     state.camera.position.y = ownRef.position.y;
     state.camera.rotation.z = ownRef.rotation.z;
+    state.camera.translateY(3);
   };
 
   const handleText = (ownRef) => {
