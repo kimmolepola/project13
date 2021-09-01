@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import * as THREE from 'three';
 import { speed, rotationSpeed } from '../../../parameters';
 
 const GameObject = ({ ids, objects, id, map, objectId }) => (
@@ -27,16 +28,25 @@ const GameObject = ({ ids, objects, id, map, objectId }) => (
       }
     }}
   >
-    <planeGeometry
-      args={[
-        Math.min(1, map.image.width / map.image.height),
-        Math.min(1, map.image.height / map.image.width),
-      ]}
-    />
+    <meshBasicMaterial attachArray="material" transparent opacity={0} />
+    <meshBasicMaterial attachArray="material" transparent opacity={0} />
+    <meshBasicMaterial attachArray="material" transparent opacity={0} />
+    <meshBasicMaterial attachArray="material" transparent opacity={0} />
     <meshBasicMaterial
+      attachArray="material"
       color={ids && objectId === id ? 'orange' : null}
       transparent
       map={map}
+    />
+    <meshBasicMaterial attachArray="material" transparent opacity={0} />
+    <meshBasicMaterial attachArray="material" transparent opacity={0} />
+
+    <boxGeometry
+      args={[
+        Math.min(1, map.image.width / map.image.height),
+        Math.min(1, map.image.height / map.image.width),
+        1,
+      ]}
     />
   </mesh>
 );
