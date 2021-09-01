@@ -22,6 +22,7 @@ const Controls = styled.div`
 `;
 
 const Button = styled.button`
+  padding: 0px;
   display: flex;
   opacity: 85%;
   color: royalblue;
