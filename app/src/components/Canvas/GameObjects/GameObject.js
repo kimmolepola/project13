@@ -7,8 +7,6 @@ const GameObject = ({ ids, objects, id, map, objectId }) => (
       const obsCur = objects.current;
       const obj = obsCur[objectId];
       if (ref && (!obj || (obj && !obj.elref))) {
-        console.log('create, obj:', obj);
-        console.log('create ', objectId);
         obsCur[objectId] = {
           controls: { left: 0, right: 0 },
           controlsOverChannels: { left: 0, right: 0 },
