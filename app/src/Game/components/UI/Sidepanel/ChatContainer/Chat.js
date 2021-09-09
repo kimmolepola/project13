@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
-import theme from '../../../../theme';
+import theme from '../../../../../theme';
 import appContext from '../../../../context/appContext';
 
 const Avatar = styled.img`
@@ -18,13 +18,14 @@ const Message = styled.div`
 
 const Text = styled.div`
   margin-right: 3px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: ${theme.fontFamily};
   font-size: 12px;
 `;
 
 const Divider = styled.hr`
   border-style: solid;
-  border-color: ${theme.colors.verylight} transparent transparent;
+  border-color: ${theme.colors.elementBackgrounds.verylight} transparent
+    transparent;
   margin: 0;
 `;
 
@@ -34,12 +35,12 @@ const Container = styled.div`
   }
 
   ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 8px ${theme.colors.light};
+    -webkit-box-shadow: inset 0 0 8px ${theme.colors.elementBackgrounds.light};
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: ${theme.colors.medium};
-    outline: 1px solid ${theme.colors.light};
+    background-color: ${theme.colors.elementBackgrounds.medium};
+    outline: 1px solid ${theme.colors.elementBackgrounds.light};
   }
   display: flex;
   flex-direction: column-reverse;
@@ -48,7 +49,7 @@ const Container = styled.div`
   scrollbar-width: thin;
   background: white;
   box-shadow: ${theme.shadow};
-  border: ${theme.borderWidth} solid ${theme.colors.light};
+  border: ${theme.borders.basic};
   border-radius: ${theme.borderRadius};
 `;
 
@@ -77,9 +78,3 @@ export default function Chat() {
     </Container>
   );
 }
-
-/*
-  box-shadow: ${theme.shadow};
-  border: ${theme.borderWidth} solid ${theme.colors.light};
-  border-radius: ${theme.borderRadius};
-*/

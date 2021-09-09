@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import Game from './Game/Game';
-
-const Frontpage = ({ page }) => (
-  <div style={{ display: page === 'frontpage' ? '' : 'none' }}>hello</div>
-);
+import Frontpage from './Frontpage/Frontpage';
 
 const App = () => {
   const [page, setPage] = useState('frontpage');
 
   return (
     <>
-      <Frontpage page={page} />
+      <Frontpage setPage={setPage} page={page} />
       <Game page={page} />
     </>
   );

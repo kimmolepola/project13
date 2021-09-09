@@ -1,48 +1,18 @@
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
-import theme from '../../../../theme';
+import theme from '../../../../../theme';
 import appContext from '../../../../context/appContext';
 import { sendDataOnOrderedChannelsAndRelay } from '../../../../messageHandler';
 
 const Button = styled.button`
   width: 12%;
   min-width: 22px;
-  color: ${theme.colors.verylight};
-  background: RoyalBlue;
-  box-shadow: ${theme.shadow};
-  border: ${theme.borderWidth} solid ${theme.colors.light};
-  border-radius: ${theme.borderRadius};
-  :focus {
-    border-color: ${theme.colors.strong};
-    outline: none;
-  }
-  :hover:not(:focus) {
-    border-color: ${theme.colors.medium};
-  }
+  ${theme.basicButton}
 `;
 
 const InputField = styled.input`
+  ${theme.basicInput}
   min-width: 40px;
-  padding-left: 6px;
-  box-shadow: ${theme.shadow};
-  border: ${theme.borderWidth} solid ${theme.colors.light};
-  border-radius: ${theme.borderRadius};
-  :focus {
-    border-color: ${theme.colors.strong};
-    outline: none;
-  }
-  :hover:not(:focus) {
-    border-color: ${theme.colors.medium};
-  }
-  ::placeholder {
-    /* Chrome, Firefox, Opera, Safari 10.1+ */
-    color: lightgrey;
-    opacity: 1; /* Firefox */
-  }
-  ::-ms-input-placeholder {
-    /* Microsoft Edge */
-    color: lightgrey;
-  }
   flex: 1;
 `;
 

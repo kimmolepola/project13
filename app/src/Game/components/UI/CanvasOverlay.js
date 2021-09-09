@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
-import theme from '../../theme';
+import theme from '../../../theme';
 import appContext from '../../context/appContext';
 import { handlePressed, handleReleased } from '../../controls';
 
@@ -25,8 +25,8 @@ const Button = styled.button`
   padding: 0px;
   display: flex;
   opacity: 85%;
-  color: royalblue;
-  border-color: royalblue;
+  color: ${theme.colors.elementHighlights.button1};
+  border-color: ${theme.colors.elementHighlights.button1};
   align-items: center;
   justify-content: center;
   font-size: 22px;

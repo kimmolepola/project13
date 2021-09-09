@@ -2,12 +2,12 @@ import React from 'react';
 import styled from 'styled-components';
 import Chat from './ChatContainer/Chat';
 import InputForm from './ChatContainer/InputForm';
-import theme from '../../../theme';
+import theme from '../../../../theme';
 
 const Container = styled.div`
-  background: ${theme.colors.verylight};
+  background: ${theme.colors.elementBackgrounds.verylight};
   box-shadow: ${theme.shadow};
-  border: ${theme.borderWidth} solid ${theme.colors.light};
+  border: ${theme.borders.basic};
   border-radius: ${theme.borderRadius};
   display: flex;
   flex-direction: column-reverse;

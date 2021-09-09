@@ -2,13 +2,13 @@ import React, { useContext } from 'react';
 import styled from 'styled-components';
 import ChatContainer from './Sidepanel/ChatContainer';
 import appContext from '../../context/appContext';
-import theme from '../../theme';
+import theme from '../../../theme';
 
 const InfoBox = styled.div`
-  color: ${theme.colors.medium};
+  color: ${theme.colors.elementBackgrounds.medium};
   background: white;
   padding: 2px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: ${theme.fontFamily};
   font-size: 12px;
   border-radius: ${theme.borderRadius};
 `;
@@ -35,7 +35,7 @@ const Container = styled.div`
   flex-direction: column;
   justify-content: space-between;
   padding: 3px;
-  background: mistyrose;
+  background: ${theme.colors.mainBackground};
 `;
 
 const Sidepanel = () => {

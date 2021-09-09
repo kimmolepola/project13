@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import * as THREE from 'three';
 import Objects from './Canvas/GameObjects';
 import Loop from './Canvas/Loop';
-import theme from '../theme';
+import theme from '../../theme';
 
 const Container = styled.div`
   position: absolute;
