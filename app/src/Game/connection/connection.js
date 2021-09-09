@@ -1,6 +1,5 @@
 import adapter from 'webrtc-adapter';
 import { io } from 'socket.io-client';
-import socket from '../services/signalingSocket';
 import iceServers from './iceServers';
 import { receiveData } from '../messageHandler';
 
@@ -18,6 +17,8 @@ const connect = ({
 }) => {
   let ownId;
   let main;
+
+  console.log('conenct');
 
   const handleDeleteId = (delId) => {
     const objs = objects.current;
@@ -40,6 +41,8 @@ const connect = ({
       });
     }
   };
+
+  const socket = io(process.env.REACT_APP_SIGNALING_SERVER);
 
   socket.on('connect', () => {
     setConnectionMessage('signaling socket connected');
