@@ -2,7 +2,6 @@ const borderRadius = '2px';
 const borderWidth = '1px';
 const shadow = '0px 0px 2px 0px #A0A0A0';
 const colors = {
-  mainText: '#142850',
   mainBackground: 'mistyrose',
   elementHighlights: {
     button1: 'brown',

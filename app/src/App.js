@@ -3,7 +3,7 @@ import Game from './Game/Game';
 import Frontpage from './Frontpage/Frontpage';
 
 const App = () => {
-  const [page, setPage] = useState('frontpage');
+  const [page, setPage] = useState('login');
 
   return (
     <>
