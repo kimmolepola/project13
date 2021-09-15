@@ -1,6 +1,6 @@
 const borderRadius = '2px';
 const borderWidth = '1px';
-const shadow = '0px 0px 2px 0px #A0A0A0';
+const shadow = '0px 0px 1px 0px #A0A0A0';
 const colors = {
   mainBackground: 'mistyrose',
   elementHighlights: {
@@ -39,6 +39,9 @@ const secondaryButton = `
 `;
 
 const theme = {
+  opacity: {
+    basic: '85%',
+  },
   borders: {
     basic: border,
   },

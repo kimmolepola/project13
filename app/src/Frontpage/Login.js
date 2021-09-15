@@ -1,12 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
+import { withRouter, Link } from 'react-router-dom';
 import theme from '../theme';
 
 const Line = styled.div`
-  margin: 20px;
-  height: 1px;
+  margin: 20px ${theme.margins.basic} 20px ${theme.margins.basic};
   border-top: ${theme.borders.basic};
-  width: 100%;
+  height: 1px;
 `;
 
 const ClickableText = styled.button`
@@ -17,104 +17,56 @@ const ClickableText = styled.button`
   margin: ${theme.margins.large};
 `;
 
-const CreateButton = styled.button`
+const Button = styled.button`
   ${theme.basicButton}
-  width: 100%;
-  height: 30px;
-  margin: 2px;
-  background-color: ${(props) => props.color};
-`;
-
-const LoginButton = styled.button`
-  ${theme.basicButton}
-  width: 100%;
-  height: 30px;
-  margin: 2px;
+  min-height: 30px;
+  margin: ${theme.margins.basic};
+  background-color: ${(props) =>
+    props.background || theme.colors.elementHighlights.button1};
 `;
 
 const Input = styled.input`
-  box-sizing: border-box;
-  width: 100%;
+  ${theme.basicInput}
   height: 30px;
-  margin: 2px;
+  margin: ${theme.margins.basic};
 `;
 
-const LoginForm = styled.form`
-  width: 100%;
+const Form = styled.form`
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
 `;
 
 const Container = styled.div`
-  max-width: 90%;
-  width: 6cm;
-  display: ${(props) => (props.page === 'login' ? 'flex' : 'none')};
+  display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
 `;
 
-const Login = ({ page, setPage }) => (
-  <Container page={page}>
-    <LoginForm>
-      <Input />
-      <Input />
-      <LoginButton onClick={() => setPage('game')}>Log in</LoginButton>
-    </LoginForm>
-    <ClickableText
-      color={theme.colors.elementHighlights.button1}
-      onClick={() => setPage('forgottenpassword')}
-    >
-      Forgotten password?
-    </ClickableText>
+const Login = ({ history }) => (
+  <Container>
+    <Form>
+      <Input placeholder="username or email" />
+      <Input placeholder="password" />
+      <Button onClick={() => history.push('/play')}>Log in</Button>
+    </Form>
+    <Link to="/forgottenpassword">
+      <ClickableText color={theme.colors.elementHighlights.button1}>
+        Forgotten password?
+      </ClickableText>
+    </Link>
     <Line>&nbsp;</Line>
-    <CreateButton
-      color={theme.colors.elementHighlights.button2}
-      onClick={() => setPage('createaccount')}
+    <Button
+      background={theme.colors.elementHighlights.button2}
+      onClick={() => history.push('/createaccount')}
     >
       Create account
-    </CreateButton>
+    </Button>
     <ClickableText
       color={theme.colors.elementHighlights.button1}
-      onClick={() => setPage('game')}
+      onClick={() => history.push('/play')}
     >
       Sign in as a guest
     </ClickableText>
   </Container>
 );
 
-export default Login;
-
-/*
-
-const Input = styled.input`
-  opacity: 70%;
-  box-sizing: border-box;
-  width: 100%;
-  ${theme.basicInput}
-  height: 30px;
-  margin: 20px;
-`;
-
-      <LoginButton onClick={() => setPage('game')}>Log in</LoginButton>
-
-
- <ClickableText
-      color={theme.colors.elementHighlights.button1}
-      onClick={() => setPage('forgottenpassword')}
-    >
-      Forgotten password?
-    </ClickableText>
-    <Line>&nbsp;</Line>
-    <CreateButton onClick={() => setPage('createaccount')}>
-      Create account
-    </CreateButton>
-    <ClickableText
-      color={theme.colors.elementHighlights.button1}
-      onClick={() => setPage('game')}
-    >
-      Sign in as a guest
-    </ClickableText>
-*/
+export default withRouter(Login);

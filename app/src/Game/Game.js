@@ -1,16 +1,11 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import debounce from 'lodash.debounce';
-import styled from 'styled-components';
 import Canvas from './components/Canvas';
 import AppContext from './context/appContext';
 import connect from './connection/connection';
 import { subscribeToKeyboardEvents } from './controls';
 import { sendDataOnOrderedChannelsAndRelay } from './messageHandler';
 import UI from './components/UI';
-
-const Container = styled.div`
-  display: ${(props) => (props.page === 'game' ? '' : 'none')};
-`;
 
 const updatePeers = (idsNew, main, id, objectIds, objects, channels, relay) => {
   if (main && main === id) {
@@ -37,7 +32,7 @@ const cleanup = (idsNew, objects) => {
   objects.current = objectsNew;
 };
 
-const Game = ({ page }) => {
+const Game = () => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
@@ -78,21 +73,18 @@ const Game = ({ page }) => {
   }, [id]);
 
   useEffect(() => {
-    let signalingSocket;
-    if (page === 'game') {
-      signalingSocket = connect({
-        objects,
-        objectIds,
-        setConnectionMessage,
-        setIds,
-        setId,
-        setChatMessages,
-        setMain,
-        setChannels,
-        setRelay,
-        setRemotes,
-      });
-    }
+    const signalingSocket = connect({
+      objects,
+      objectIds,
+      setConnectionMessage,
+      setIds,
+      setId,
+      setChatMessages,
+      setMain,
+      setChannels,
+      setRelay,
+      setRemotes,
+    });
     return () => {
       Object.keys(remotes).forEach((x) => {
         if (remotes[x].pc) remotes[x].pc.close();
@@ -102,10 +94,10 @@ const Game = ({ page }) => {
       setRelay(undefined);
       if (signalingSocket) signalingSocket.disconnect();
     };
-  }, [page]);
+  }, []);
 
   return (
-    <Container page={page}>
+    <>
       <Canvas
         windowHeight={windowHeight}
         ids={ids}
@@ -135,7 +127,7 @@ const Game = ({ page }) => {
       >
         <UI />
       </AppContext.Provider>
-    </Container>
+    </>
   );
 };
 

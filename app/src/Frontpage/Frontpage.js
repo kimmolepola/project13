@@ -1,19 +1,20 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useHistory, Switch, Route } from 'react-router-dom';
 import theme from '../theme';
 import Login from './Login';
 import ForgottenPassword from './ForgottenPassword';
 import CreateAccount from './CreateAccount';
 
 const Title = styled.div`
-  opacity: 85%;
+  opacity: ${theme.opacity.basic};
   font-family: ${theme.fontFamily};
   font-size: 26px;
   margin-bottom: 26px;
 `;
 
 const Container = styled.div`
-  display: ${(props) => (props.page !== 'game' ? 'flex' : 'none')};
+  display: 'flex'};
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -25,15 +26,25 @@ const Container = styled.div`
   background: ${theme.colors.mainBackground};
 `;
 
-const Frontpage = ({ page, setPage }) => (
-  <>
-    <Container page={page}>
+const Frontpage = ({ page, setPage }) => {
+  const history = useHistory();
+
+  return (
+    <Container>
       <Title>Project13</Title>
-      <Login setPage={setPage} page={page} />
-      <ForgottenPassword setPage={setPage} page={page} />
-      <CreateAccount setPage={setPage} page={page} />
+      <Switch>
+        <Route path="/forgottenpassword">
+          <ForgottenPassword setPage={setPage} page={page} />
+        </Route>
+        <Route path="/createaccount">
+          <CreateAccount setPage={setPage} page={page} />
+        </Route>
+        <Route path="/">
+          <Login history={history} setPage={setPage} page={page} />
+        </Route>
+      </Switch>
     </Container>
-  </>
-);
+  );
+};
 
 export default Frontpage;
