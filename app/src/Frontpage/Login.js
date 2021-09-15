@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import theme from '../theme';
 
 const Line = styled.div`
@@ -48,11 +48,12 @@ const Login = ({ history }) => (
       <Input placeholder="password" />
       <Button onClick={() => history.push('/play')}>Log in</Button>
     </Form>
-    <Link to="/forgottenpassword">
-      <ClickableText color={theme.colors.elementHighlights.button1}>
-        Forgotten password?
-      </ClickableText>
-    </Link>
+    <ClickableText
+      color={theme.colors.elementHighlights.button1}
+      onClick={() => history.push('/forgottenpassword')}
+    >
+      Forgotten password?
+    </ClickableText>
     <Line>&nbsp;</Line>
     <Button
       background={theme.colors.elementHighlights.button2}

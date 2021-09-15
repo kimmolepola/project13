@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { withRouter } from 'react-router-dom';
 import theme from '../theme';
 
 const ButtonContainer = styled.div`
@@ -37,7 +38,7 @@ const Container = styled.div`
   flex-direction: column;
 `;
 
-const ForgottenPassword = () => (
+const ForgottenPassword = ({ history }) => (
   <Container>
     <Subtitle>Enter your username or email</Subtitle>
     <Form>
@@ -46,6 +47,7 @@ const ForgottenPassword = () => (
         <Button
           color={theme.colors.elementHighlights.button1}
           background="transparent"
+          onClick={() => history.push('/')}
         >
           Cancel
         </Button>
@@ -55,4 +57,4 @@ const ForgottenPassword = () => (
   </Container>
 );
 
-export default ForgottenPassword;
+export default withRouter(ForgottenPassword);
