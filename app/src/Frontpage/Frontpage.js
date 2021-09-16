@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useHistory, Switch, Route } from 'react-router-dom';
 import theme from '../theme';
@@ -26,21 +26,22 @@ const Container = styled.div`
   background: ${theme.colors.mainBackground};
 `;
 
-const Frontpage = ({ page, setPage }) => {
+const Frontpage = () => {
   const history = useHistory();
+  const [user, setUser] = useState();
 
   return (
     <Container>
       <Title>Project13</Title>
       <Switch>
         <Route path="/forgottenpassword">
-          <ForgottenPassword setPage={setPage} page={page} />
+          <ForgottenPassword />
         </Route>
         <Route path="/createaccount">
-          <CreateAccount setPage={setPage} page={page} />
+          <CreateAccount setUser={setUser} />
         </Route>
         <Route path="/">
-          <Login history={history} setPage={setPage} page={page} />
+          <Login setUser={setUser} history={history} />
         </Route>
       </Switch>
     </Container>
