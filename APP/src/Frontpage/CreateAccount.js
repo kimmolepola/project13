@@ -12,7 +12,7 @@ const ErrorMessage = styled.div`
 `;
 
 const Subtitle = styled.div`
-  margin: ${theme.margins.large};
+  margin: ${theme.margins.large} ${theme.margins.basic};
   opacity: ${theme.opacity.basic};
 `;
 

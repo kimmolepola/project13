@@ -17,7 +17,7 @@ const signUpController = async (req, res, next) => {
 
 const resetPasswordRequestController = async (req, res, next) => {
   const requestPasswordResetService = await requestPasswordReset(
-    req.body.email,
+    req.body.username,
   );
   return res.json(requestPasswordResetService);
 };

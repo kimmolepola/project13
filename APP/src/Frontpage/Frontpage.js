@@ -53,26 +53,17 @@ const Frontpage = () => {
         </Route>
         <Route path="/">
           <div>
-            {(() => {
-              if (user)
-                return (
-                  <div>
-                    Hello {user.username}
-                    <p />
-                    <button
-                      onClick={() => {
-                        setUser(null);
-                        window.localStorage.removeItem('loggedProject13User');
-                      }}
-                      type="button"
-                    >
-                      logout
-                    </button>
-                  </div>
-                );
-              history.push('/login');
-              return null;
-            })()}
+            Hello {user ? user.username : null}
+            <p />
+            <button
+              onClick={() => {
+                setUser(null);
+                window.localStorage.removeItem('loggedProject13User');
+              }}
+              type="button"
+            >
+              logout
+            </button>
           </div>
         </Route>
       </Switch>

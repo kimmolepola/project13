@@ -53,9 +53,15 @@ const signup = async (data) => {
   });
 };
 
-const requestPasswordReset = async (email) => {
-  const user = await User.findOne({ email });
-  if (!user) throw new Error('Email does not exist');
+const requestPasswordReset = async (username) => {
+  // const user = await User.findOne({ email });
+  let user;
+  if (username.includes('@')) {
+    user = await User.findOne({ email: username });
+  } else {
+    user = await User.findOne({ username });
+  }
+  if (!user) throw new Error('User does not exist');
 
   const token = await Token.findOne({ userId: user._id });
   if (token) await token.deleteOne();
@@ -71,16 +77,20 @@ const requestPasswordReset = async (email) => {
 
   const link = `${clientURL}/passwordReset?token=${resetToken}&id=${user._id}`;
 
-  sendEmail(
-    user.email,
-    'Password Reset Request',
-    {
-      name: user.name,
-      link,
-    },
-    './template/requestResetPassword.handlebars',
-  );
-  return link;
+  try {
+    await sendEmail(
+      user.email,
+      'Password Reset Request',
+      {
+        name: user.username,
+        link,
+      },
+      './template/requestResetPassword.handlebars',
+    );
+    return { success: true };
+  } catch (err) {
+    throw new Error('Email service error');
+  }
 };
 
 const resetPassword = async (userId, token, password) => {

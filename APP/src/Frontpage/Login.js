@@ -38,6 +38,7 @@ const Input = styled.input`
   ${theme.basicInput}
   height: 30px;
   margin: ${theme.margins.basic};
+  ${(props) => props.error && 'border-color: red;'}
 `;
 
 const Form = styled.form`
@@ -94,6 +95,7 @@ const Login = ({ setUser, history }) => {
           placeholder="username or email"
         />
         <Input
+          type="password"
           error={validation.passwordd}
           onChange={(e) => setPassword(e.target.value)}
           value={password}
