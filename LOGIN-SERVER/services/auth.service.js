@@ -11,14 +11,17 @@ const clientURL = process.env.CLIENT_URL;
 
 /* eslint-disable no-underscore-dangle, no-return-assign, no-param-reassign */
 const login = async (data) => {
-  const user = await User.findOne({ username: data.username });
+  let user;
+  if (data.username.includes('@')) {
+    user = await User.findOne({ email: data.username });
+  } else {
+    user = await User.findOne({ username: data.username });
+  }
   const passwordCorrect =
-    user === null
-      ? false
-      : await bcrypt.compare(data.password, user.passwordHash);
+    user === null ? false : await bcrypt.compare(data.password, user.password);
 
   if (!(user && passwordCorrect)) {
-    throw new Error('Invalid username or password', 401);
+    throw new Error('Invalid username, email or password', 401);
   }
 
   const token = JWT.sign({ id: user._id }, JWTSecret);

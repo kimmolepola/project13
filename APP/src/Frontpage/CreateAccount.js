@@ -73,7 +73,10 @@ const CreateAccount = ({ setUser }) => {
       !newValidation.password &&
       !newValidation.repeatPassword
     ) {
-      newValidation.create = await signup({ email, password, setUser });
+      const { data, error } = await signup({ email, password });
+      setUser(data);
+      window.localStorage.setItem('loggedProject13User', JSON.stringify(data));
+      newValidation.create = error;
     }
     setValidation(newValidation);
   };

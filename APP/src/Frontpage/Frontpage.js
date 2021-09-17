@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useHistory, Switch, Route } from 'react-router-dom';
 import theme from '../theme';
@@ -30,6 +30,14 @@ const Frontpage = () => {
   const history = useHistory();
   const [user, setUser] = useState();
 
+  useEffect(() => {
+    if (user) {
+      history.push('/');
+    } else {
+      history.push('/login');
+    }
+  }, [user]);
+
   return (
     <Container>
       <Title>Project13</Title>
@@ -40,8 +48,32 @@ const Frontpage = () => {
         <Route path="/createaccount">
           <CreateAccount setUser={setUser} />
         </Route>
-        <Route path="/">
+        <Route path="/login">
           <Login setUser={setUser} history={history} />
+        </Route>
+        <Route path="/">
+          <div>
+            {(() => {
+              if (user)
+                return (
+                  <div>
+                    Hello {user.username}
+                    <p />
+                    <button
+                      onClick={() => {
+                        setUser(null);
+                        window.localStorage.removeItem('loggedProject13User');
+                      }}
+                      type="button"
+                    >
+                      logout
+                    </button>
+                  </div>
+                );
+              history.push('/login');
+              return null;
+            })()}
+          </div>
         </Route>
       </Switch>
     </Container>
