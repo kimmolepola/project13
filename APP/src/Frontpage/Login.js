@@ -47,11 +47,11 @@ const Form = styled.form`
 `;
 
 const Container = styled.div`
-  display: flex;
+  display: ${(props) => (props.user ? 'none' : 'flex')};
   flex-direction: column;
 `;
 
-const Login = ({ setUser, history }) => {
+const Login = ({ user, setUser, history }) => {
   const [validation, setValidation] = useState({
     login: null,
     username: null,
@@ -85,7 +85,7 @@ const Login = ({ setUser, history }) => {
   };
 
   return (
-    <Container>
+    <Container user={user}>
       <Form onSubmit={handleSubmit}>
         <ErrorMessage error={validation.login}>{validation.login}</ErrorMessage>
         <Input

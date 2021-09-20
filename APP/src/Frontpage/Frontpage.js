@@ -1,12 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useHistory, Switch, Route } from 'react-router-dom';
 import theme from '../theme';
 import Login from './Login';
 import ForgottenPassword from './ForgottenPassword';
 import CreateAccount from './CreateAccount';
+import ResetPassword from './ResetPassword';
 
-const Title = styled.div`
+const Title = styled.button`
+  cursor: pointer;
+  background: none;
+  border: none;
   opacity: ${theme.opacity.basic};
   font-family: ${theme.fontFamily};
   font-size: 26px;
@@ -30,29 +34,21 @@ const Frontpage = () => {
   const history = useHistory();
   const [user, setUser] = useState();
 
-  useEffect(() => {
-    if (user) {
-      history.push('/');
-    } else {
-      history.push('/login');
-    }
-  }, [user]);
-
   return (
     <Container>
       <Title>Project13</Title>
       <Switch>
-        <Route path="/forgottenpassword">
-          <ForgottenPassword />
-        </Route>
+        <Route path="/resetpassword" component={ResetPassword} />
+        <Route path="/forgottenpassword" component={ForgottenPassword} />
         <Route path="/createaccount">
           <CreateAccount setUser={setUser} />
         </Route>
         <Route path="/login">
-          <Login setUser={setUser} history={history} />
+          <Login user={user} setUser={setUser} history={history} />
         </Route>
         <Route path="/">
-          <div>
+          <Login user={user} setUser={setUser} history={history} />
+          <div style={{ display: user ? '' : 'none' }}>
             Hello {user ? user.username : null}
             <p />
             <button

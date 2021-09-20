@@ -1,5 +1,22 @@
 import axios from 'axios';
 
+export const resetPassword = async ({ token, userId, password }) => {
+  try {
+    const response = await axios.post(
+      'http://localhost:8060/api/v1/auth/resetpassword',
+      {
+        token,
+        userId,
+        password,
+      },
+    );
+    return { data: response.data, error: null };
+  } catch (err) {
+    const error = err.response ? err.response.data.error : err.toString();
+    return { data: null, error };
+  }
+};
+
 export const requestPasswordReset = async ({ username }) => {
   try {
     const response = await axios.post(

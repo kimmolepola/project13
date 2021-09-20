@@ -75,7 +75,10 @@ const requestPasswordReset = async (username) => {
     createdAt: Date.now(),
   }).save();
 
-  const link = `${clientURL}/passwordReset?token=${resetToken}&id=${user._id}`;
+  console.log('new, id:', user._id, 'token:', hash);
+
+  // const link = `https://${clientURL}/passwordreset?token=${resetToken}&id=${user._id}`;
+  const link = `http://${clientURL}/resetpassword?token=${resetToken}&id=${user._id}`;
 
   try {
     await sendEmail(
@@ -94,6 +97,9 @@ const requestPasswordReset = async (username) => {
 };
 
 const resetPassword = async (userId, token, password) => {
+  console.log(token);
+  console.log(await bcrypt.hash(token, Number(bcryptSalt)));
+
   const passwordResetToken = await Token.findOne({ userId });
 
   if (!passwordResetToken) {

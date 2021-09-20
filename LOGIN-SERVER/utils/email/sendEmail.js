@@ -12,7 +12,6 @@ const sendEmail = async (email, subject, payload, template) => {
       host: process.env.EMAIL_HOST,
       port: 465,
       auth: {
-        // naturally, replace both with your real credentials or an application-specific password
         user: process.env.EMAIL_USERNAME,
         pass: process.env.EMAIL_PASSWORD,
       },
@@ -33,15 +32,5 @@ const sendEmail = async (email, subject, payload, template) => {
     return false;
   }
 };
-
-/*
-Example:
-sendEmail(
-  "youremail@gmail.com,
-  "Email subject",
-  { name: "Eze" },
-  "./templates/layouts/main.handlebars"
-);
-*/
 
 module.exports = sendEmail;
