@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import theme from '../theme';
-import { login } from './services/auth.service';
+import { setToken, login } from './services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;
@@ -53,6 +53,7 @@ const Container = styled.div`
 
 const Login = ({ user, setUser, history }) => {
   const [validation, setValidation] = useState({
+    state: 'open',
     login: null,
     username: null,
     password: null,
@@ -62,6 +63,7 @@ const Login = ({ user, setUser, history }) => {
 
   useEffect(() => {
     setValidation({
+      state: 'open',
       login: null,
       username: null,
       password: null,
@@ -71,54 +73,88 @@ const Login = ({ user, setUser, history }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newValidation = {
-      create: null,
+      state: 'open',
+      login: null,
       username: username.length ? null : 'required',
       password: password.length ? null : 'required',
     };
     if (!newValidation.username && !newValidation.password) {
+      newValidation.state = 'loading';
+      setValidation(newValidation);
       const { data, error } = await login({ username, password });
-      setUser(data);
-      window.localStorage.setItem('loggedProject13User', JSON.stringify(data));
       newValidation.login = error;
+      newValidation.state = 'open';
+      if (!error) {
+        setUser(data);
+      }
     }
-    setValidation(newValidation);
+    setValidation({ ...newValidation });
+  };
+
+  const handleUsernameInput = (e) => {
+    setUsername(e.target.value);
+  };
+
+  const handlePasswordInput = (e) => {
+    setPassword(e.target.value);
+  };
+
+  const handleForgottenPasswordClick = () => {
+    history.push('/forgottenpassword');
+  };
+
+  const handleCreateAccountClick = () => {
+    history.push('/createaccount');
+  };
+
+  const handleGuestClick = () => {
+    history.push('/play');
   };
 
   return (
     <Container user={user}>
+      <ErrorMessage error={validation.login}>{validation.login}</ErrorMessage>
       <Form onSubmit={handleSubmit}>
-        <ErrorMessage error={validation.login}>{validation.login}</ErrorMessage>
+        <ErrorMessage error={validation.username}>
+          {validation.username}
+        </ErrorMessage>
         <Input
           error={validation.username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={handleUsernameInput}
           value={username}
           placeholder="username or email"
         />
+        <ErrorMessage error={validation.password}>
+          {validation.password}
+        </ErrorMessage>
+
         <Input
           type="password"
-          error={validation.passwordd}
-          onChange={(e) => setPassword(e.target.value)}
+          error={validation.password}
+          onChange={handlePasswordInput}
           value={password}
           placeholder="password"
         />
-        <Button type="submit">Log in</Button>
+        <Button disabled={validation.state === 'loading'} type="submit">
+          Log in
+        </Button>
       </Form>
       <ClickableText
         color={theme.colors.elementHighlights.button1}
-        onClick={() => history.push('/forgottenpassword')}
+        onClick={handleForgottenPasswordClick}
       >
         Forgotten password?
       </ClickableText>
       <Line>&nbsp;</Line>
       <Button
         background={theme.colors.elementHighlights.button2}
-        onClick={() => history.push('/createaccount')}
+        onClick={handleCreateAccountClick}
       >
         Create account
       </Button>
       <ClickableText
         color={theme.colors.elementHighlights.button1}
-        onClick={() => history.push('/play')}
+        onClick={handleGuestClick}
       >
         Sign in as a guest
       </ClickableText>

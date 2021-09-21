@@ -25,8 +25,10 @@ const login = async (data) => {
   }
 
   const token = JWT.sign({ id: user._id }, JWTSecret);
+  const id2token = JWT.sign({ id2: user.id2 }, JWTSecret);
 
   return (data = {
+    id2token,
     userId: user._id,
     email: user.email,
     username: user.username,
@@ -39,13 +41,16 @@ const signup = async (data) => {
   if (user) {
     throw new Error('Email already exist', 422);
   }
+  data.id2 = Math.random().toString();
   data.username = Math.random().toString();
   user = new User(data);
 
   const token = JWT.sign({ id: user._id }, JWTSecret);
+  const id2token = JWT.sign({ id2: user.id2 }, JWTSecret);
   await user.save();
 
   return (data = {
+    id2token,
     userId: user._id,
     email: user.email,
     username: user.username,

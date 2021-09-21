@@ -92,7 +92,15 @@ const ForgottenPassword = ({ history }) => {
       newValidation.state = error ? 'open' : 'success';
       setUsername('');
     }
-    setValidation(newValidation);
+    setValidation({ ...newValidation });
+  };
+
+  const handleUsernameInput = (e) => {
+    setUsername(e.target.value);
+  };
+
+  const handleCancelClick = () => {
+    history.push('/login');
   };
 
   return (
@@ -107,15 +115,16 @@ const ForgottenPassword = ({ history }) => {
         </ErrorMessage>
         <Input
           error={validation.username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={handleUsernameInput}
           value={username}
           placeholder="username or email"
         />
         <ButtonContainer>
           <Button
+            onClick={handleCancelClick}
             color={theme.colors.elementHighlights.button1}
             background="transparent"
-            onClick={() => history.push('/login')}
+            type="button"
           >
             Cancel
           </Button>

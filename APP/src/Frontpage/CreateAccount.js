@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import theme from '../theme';
-import { signup } from './services/auth.service';
+import { setToken, signup } from './services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;
@@ -38,8 +38,9 @@ const Container = styled.div`
   flex-direction: column;
 `;
 
-const CreateAccount = ({ setUser }) => {
+const CreateAccount = ({ user, history, setUser }) => {
   const [validation, setValidation] = useState({
+    state: 'open',
     create: null,
     email: null,
     password: null,
@@ -50,7 +51,17 @@ const CreateAccount = ({ setUser }) => {
   const [repeatPassword, setRepeatPassword] = useState('');
 
   useEffect(() => {
+    const doit = () => {
+      if (user) {
+        history.push('/');
+      }
+    };
+    doit();
+  }, [user]);
+
+  useEffect(() => {
     setValidation({
+      state: 'open',
       create: null,
       email: null,
       password: null,
@@ -61,6 +72,7 @@ const CreateAccount = ({ setUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newValidation = {
+      state: 'open',
       create: null,
       email: email.match(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/)
         ? null
@@ -73,25 +85,41 @@ const CreateAccount = ({ setUser }) => {
       !newValidation.password &&
       !newValidation.repeatPassword
     ) {
+      newValidation.state = 'loading';
+      setValidation(newValidation);
       const { data, error } = await signup({ email, password });
-      setUser(data);
-      window.localStorage.setItem('loggedProject13User', JSON.stringify(data));
       newValidation.create = error;
+      newValidation.state = 'open';
+      if (!error) {
+        setUser(data);
+      }
     }
-    setValidation(newValidation);
+    setValidation({ ...newValidation });
+  };
+
+  const handleEmailInput = (e) => {
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordInput = (e) => {
+    setPassword(e.target.value);
+  };
+
+  const handleRepeatPasswordInput = (e) => {
+    setRepeatPassword(e.target.value);
   };
 
   return (
     <Container>
       <Subtitle>Create account</Subtitle>
-      <Form>
+      <Form onSubmit={handleSubmit}>
         <ErrorMessage error={validation.create}>
           {validation.create}
         </ErrorMessage>
         <ErrorMessage error={validation.email}>{validation.email}</ErrorMessage>
         <Input
           error={validation.email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={handleEmailInput}
           value={email}
           placeholder="email"
         />
@@ -100,7 +128,7 @@ const CreateAccount = ({ setUser }) => {
         </ErrorMessage>
         <Input
           error={validation.password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={handlePasswordInput}
           type="password"
           value={password}
           placeholder="password"
@@ -110,12 +138,12 @@ const CreateAccount = ({ setUser }) => {
         </ErrorMessage>
         <Input
           error={validation.repeatPassword}
-          onChange={(e) => setRepeatPassword(e.target.value)}
+          onChange={handleRepeatPasswordInput}
           type="password"
           value={repeatPassword}
           placeholder="repeat password"
         />
-        <SubmitButton type="submit" onClick={handleSubmit}>
+        <SubmitButton disabled={validation.state === 'loading'} type="submit">
           Create
         </SubmitButton>
       </Form>

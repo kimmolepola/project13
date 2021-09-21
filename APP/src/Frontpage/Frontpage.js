@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useHistory, Switch, Route } from 'react-router-dom';
 import theme from '../theme';
@@ -6,6 +6,8 @@ import Login from './Login';
 import ForgottenPassword from './ForgottenPassword';
 import CreateAccount from './CreateAccount';
 import ResetPassword from './ResetPassword';
+import LoggedIn from './LoggedIn';
+import { setToken } from './services/auth.service';
 
 const Title = styled.button`
   cursor: pointer;
@@ -32,35 +34,34 @@ const Container = styled.div`
 
 const Frontpage = () => {
   const history = useHistory();
-  const [user, setUser] = useState();
+  const [user, setUser] = useState(
+    JSON.parse(window.localStorage.getItem('loggedProject13User')),
+  );
+
+  useEffect(() => {
+    window.localStorage.setItem('loggedProject13User', JSON.stringify(user));
+    setToken(user ? user.token : null);
+  }, [user]);
+
+  const handleTitleClick = () => {
+    history.push('/');
+  };
 
   return (
     <Container>
-      <Title>Project13</Title>
+      <Title onClick={handleTitleClick}>Project13</Title>
       <Switch>
         <Route path="/resetpassword" component={ResetPassword} />
         <Route path="/forgottenpassword" component={ForgottenPassword} />
         <Route path="/createaccount">
-          <CreateAccount setUser={setUser} />
+          <CreateAccount user={user} setUser={setUser} history={history} />
         </Route>
         <Route path="/login">
           <Login user={user} setUser={setUser} history={history} />
         </Route>
         <Route path="/">
           <Login user={user} setUser={setUser} history={history} />
-          <div style={{ display: user ? '' : 'none' }}>
-            Hello {user ? user.username : null}
-            <p />
-            <button
-              onClick={() => {
-                setUser(null);
-                window.localStorage.removeItem('loggedProject13User');
-              }}
-              type="button"
-            >
-              logout
-            </button>
-          </div>
+          <LoggedIn user={user} setUser={setUser} history={history} />
         </Route>
       </Switch>
     </Container>

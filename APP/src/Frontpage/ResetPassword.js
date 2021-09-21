@@ -102,7 +102,15 @@ const ResetPassword = () => {
       setPassword('');
       setRepeatPassword('');
     }
-    setValidation(newValidation);
+    setValidation({ ...newValidation });
+  };
+
+  const handlePasswordInput = (e) => {
+    setPassword(e.target.value);
+  };
+
+  const handleRepeatPasswordInput = (e) => {
+    setRepeatPassword(e.target.value);
   };
 
   return (
@@ -118,7 +126,7 @@ const ResetPassword = () => {
         <Input
           type="password"
           error={validation.password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={handlePasswordInput}
           value={password}
           placeholder="password"
         />
@@ -129,12 +137,14 @@ const ResetPassword = () => {
         <Input
           type="password"
           error={validation.repeatPassword}
-          onChange={(e) => setRepeatPassword(e.target.value)}
+          onChange={handleRepeatPasswordInput}
           value={repeatPassword}
           placeholder="repeat password"
         />
         <ButtonContainer>
-          <Button type="submit">Submit</Button>
+          <Button disabled={validation.state === 'loading'} type="submit">
+            Submit
+          </Button>
         </ButtonContainer>
       </Form>
     </Container>

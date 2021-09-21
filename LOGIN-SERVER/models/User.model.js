@@ -7,6 +7,11 @@ const bcryptSalt = process.env.BCRYPT_SALT;
 
 const userSchema = new Schema(
   {
+    id2: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     username: {
       type: String,
       trim: true,
@@ -19,7 +24,10 @@ const userSchema = new Schema(
       unique: true,
       required: true,
     },
-    password: { type: String },
+    password: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,
