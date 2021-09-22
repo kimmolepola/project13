@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
-import theme from '../theme';
-import { setToken, login } from './services/auth.service';
+import theme from '../../theme';
+import { setToken, login } from '../services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;
@@ -47,7 +47,7 @@ const Form = styled.form`
 `;
 
 const Container = styled.div`
-  display: ${(props) => (props.user ? 'none' : 'flex')};
+  display: ${(props) => (props.show ? 'flex' : 'none')};
   flex-direction: column;
 `;
 
@@ -86,6 +86,8 @@ const Login = ({ user, setUser, history }) => {
       newValidation.state = 'open';
       if (!error) {
         setUser(data);
+        setUsername('');
+        setPassword('');
       }
     }
     setValidation({ ...newValidation });
@@ -112,13 +114,14 @@ const Login = ({ user, setUser, history }) => {
   };
 
   return (
-    <Container user={user}>
+    <Container show={!user}>
       <ErrorMessage error={validation.login}>{validation.login}</ErrorMessage>
       <Form onSubmit={handleSubmit}>
         <ErrorMessage error={validation.username}>
           {validation.username}
         </ErrorMessage>
         <Input
+          autoCapitalize="none"
           error={validation.username}
           onChange={handleUsernameInput}
           value={username}

@@ -5,6 +5,7 @@ const express = require('express');
 
 const app = express();
 const cors = require('cors');
+const { networkInterfaces } = require('os');
 const connection = require('./db');
 
 const port = 8060;
@@ -20,12 +21,14 @@ app.use(express.json());
 app.use('/api/v1', require('./routes/index.route'));
 
 app.use((error, req, res, next) => {
-  console.log('res:', res);
-  res.status(500).json({ error: error.message });
+  res.status(error.statusCode || 500).json({ error: error.message });
 });
 
 app.listen(port, () => {
   console.log('Listening to Port ', port);
 });
+
+const nets = networkInterfaces();
+console.log(nets);
 
 module.exports = app;

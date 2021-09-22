@@ -31,6 +31,13 @@ const basicButton = `
   :hover:not(:focus) {
     border-color: ${colors.elementBackgrounds.medium};
   }
+  :disabled {
+    background-color: ${colors.elementBackgrounds.light};
+    :hover:not(:focus) {
+      border-color: ${colors.elementBackgrounds.light};
+    }
+    cursor: auto;
+  }
 `;
 
 const secondaryButton = `
@@ -39,6 +46,7 @@ const secondaryButton = `
 `;
 
 const theme = {
+  appbarHeight: '15mm',
   opacity: {
     basic: '85%',
   },

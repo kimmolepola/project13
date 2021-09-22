@@ -21,7 +21,9 @@ const login = async (data) => {
     user === null ? false : await bcrypt.compare(data.password, user.password);
 
   if (!(user && passwordCorrect)) {
-    throw new Error('Invalid username, email or password', 401);
+    const err = new Error('Invalid username, email or password');
+    err.statusCode = 401;
+    throw err;
   }
 
   const token = JWT.sign({ id: user._id }, JWTSecret);
@@ -39,7 +41,9 @@ const login = async (data) => {
 const signup = async (data) => {
   let user = await User.findOne({ email: data.email });
   if (user) {
-    throw new Error('Email already exist', 422);
+    const err = new Error('Email already exist');
+    err.statusCode = 409;
+    throw err;
   }
   data.id2 = Math.random().toString();
   data.username = Math.random().toString();
@@ -48,6 +52,19 @@ const signup = async (data) => {
   const token = JWT.sign({ id: user._id }, JWTSecret);
   const id2token = JWT.sign({ id2: user.id2 }, JWTSecret);
   await user.save();
+
+  try {
+    await sendEmail(
+      user.email,
+      'Welcome',
+      {
+        name: user.username,
+      },
+      './template/welcome.handlebars',
+    );
+  } catch (err) {
+    console.error('Email service error');
+  }
 
   return (data = {
     id2token,
@@ -66,7 +83,11 @@ const requestPasswordReset = async (username) => {
   } else {
     user = await User.findOne({ username });
   }
-  if (!user) throw new Error('User does not exist');
+  if (!user) {
+    const err = new Error('User does not exist');
+    err.statusCode = 422;
+    throw err;
+  }
 
   const token = await Token.findOne({ userId: user._id });
   if (token) await token.deleteOne();
@@ -95,7 +116,7 @@ const requestPasswordReset = async (username) => {
       },
       './template/requestResetPassword.handlebars',
     );
-    return { success: true };
+    return true;
   } catch (err) {
     throw new Error('Email service error');
   }
@@ -108,13 +129,17 @@ const resetPassword = async (userId, token, password) => {
   const passwordResetToken = await Token.findOne({ userId });
 
   if (!passwordResetToken) {
-    throw new Error('Invalid or expired password reset token');
+    const err = new Error('Invalid or expired password reset token');
+    err.statusCode = 400;
+    throw err;
   }
 
   const isValid = await bcrypt.compare(token, passwordResetToken.token);
 
   if (!isValid) {
-    throw new Error('Invalid or expired password reset token');
+    const err = new Error('Invalid or expired password reset token');
+    err.statusCode = 400;
+    throw err;
   }
 
   const hash = await bcrypt.hash(password, Number(bcryptSalt));
@@ -127,18 +152,21 @@ const resetPassword = async (userId, token, password) => {
 
   const user = await User.findById({ _id: userId });
 
-  sendEmail(
-    user.email,
-    'Password Reset Successfully',
-    {
-      name: user.name,
-    },
-    './template/resetPassword.handlebars',
-  );
-
   await passwordResetToken.deleteOne();
 
-  return true;
+  try {
+    await sendEmail(
+      user.email,
+      'Password Reset Successfully',
+      {
+        name: user.username,
+      },
+      './template/resetPassword.handlebars',
+    );
+    return true;
+  } catch (error) {
+    throw new Error('Email service error');
+  }
 };
 
 module.exports = {

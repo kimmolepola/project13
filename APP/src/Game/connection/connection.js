@@ -18,8 +18,6 @@ const connect = ({
   let ownId;
   let main;
 
-  console.log('conenct');
-
   const handleDeleteId = (delId) => {
     const objs = objects.current;
     delete objs[delId];

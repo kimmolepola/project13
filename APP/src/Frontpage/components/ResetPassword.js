@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { withRouter } from 'react-router-dom';
-import theme from '../theme';
-import { requestPasswordReset } from './services/auth.service';
+import { useLocation, withRouter } from 'react-router-dom';
+import theme from '../../theme';
+import { resetPassword } from '../services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;
@@ -53,54 +53,64 @@ const stateText = (state) => {
     case 'loading':
       return 'Please wait...';
     case 'success':
-      return 'Email sent (check spam)';
+      return 'Password changed. You can now log in using your new password.';
     default:
-      return 'Enter your username or email';
+      return 'Enter new password';
   }
 };
 
-const ForgottenPassword = ({ history }) => {
+const ResetPassword = () => {
+  const query = new URLSearchParams(useLocation().search);
   const [validation, setValidation] = useState({
     state: 'open',
     request: null,
     username: null,
   });
-  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
 
   useEffect(() => {
-    if (username.length) {
+    if (password.length || repeatPassword.length) {
       setValidation((x) => ({
         state: x.state,
         request: null,
-        username: null,
+        password: null,
+        repeatPassword: null,
       }));
     }
-  }, [username]);
+  }, [password, repeatPassword]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('submit');
     const newValidation = {
       state: 'open',
       request: null,
-      username: username.length ? null : 'required',
+      password: password !== '' ? null : 'invalid password',
+      repeatPassword: password === repeatPassword ? null : 'password mismatch',
     };
-    if (!newValidation.username) {
+    if (!newValidation.password && !newValidation.repeatPassword) {
       newValidation.state = 'loading';
       setValidation(newValidation);
-      const { data, error } = await requestPasswordReset({ username });
+      const { data, error } = await resetPassword({
+        password,
+        token: query.get('token'),
+        userId: query.get('id'),
+      });
       newValidation.request = error;
       newValidation.state = error ? 'open' : 'success';
-      setUsername('');
+      setPassword('');
+      setRepeatPassword('');
     }
     setValidation({ ...newValidation });
   };
 
-  const handleUsernameInput = (e) => {
-    setUsername(e.target.value);
+  const handlePasswordInput = (e) => {
+    setPassword(e.target.value);
   };
 
-  const handleCancelClick = () => {
-    history.push('/login');
+  const handleRepeatPasswordInput = (e) => {
+    setRepeatPassword(e.target.value);
   };
 
   return (
@@ -110,24 +120,28 @@ const ForgottenPassword = ({ history }) => {
         {validation.request}
       </ErrorMessage>
       <Form show={validation.state !== 'success'} onSubmit={handleSubmit}>
-        <ErrorMessage error={validation.username}>
-          {validation.username}
+        <ErrorMessage error={validation.password}>
+          {validation.password}
         </ErrorMessage>
         <Input
-          error={validation.username}
-          onChange={handleUsernameInput}
-          value={username}
-          placeholder="username or email"
+          type="password"
+          error={validation.password}
+          onChange={handlePasswordInput}
+          value={password}
+          placeholder="password"
+        />
+        <ErrorMessage error={validation.repeatPassword}>
+          {validation.repeatPassword}
+        </ErrorMessage>
+
+        <Input
+          type="password"
+          error={validation.repeatPassword}
+          onChange={handleRepeatPasswordInput}
+          value={repeatPassword}
+          placeholder="repeat password"
         />
         <ButtonContainer>
-          <Button
-            onClick={handleCancelClick}
-            color={theme.colors.elementHighlights.button1}
-            background="transparent"
-            type="button"
-          >
-            Cancel
-          </Button>
           <Button disabled={validation.state === 'loading'} type="submit">
             Submit
           </Button>
@@ -137,4 +151,4 @@ const ForgottenPassword = ({ history }) => {
   );
 };
 
-export default withRouter(ForgottenPassword);
+export default withRouter(ResetPassword);

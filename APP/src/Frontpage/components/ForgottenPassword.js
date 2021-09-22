@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useLocation, withRouter } from 'react-router-dom';
-import theme from '../theme';
-import { resetPassword } from './services/auth.service';
+import { withRouter } from 'react-router-dom';
+import theme from '../../theme';
+import { requestPasswordReset } from '../services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;
@@ -53,64 +53,54 @@ const stateText = (state) => {
     case 'loading':
       return 'Please wait...';
     case 'success':
-      return 'Password changed';
+      return 'Email sent (check spam)';
     default:
-      return 'Enter new password';
+      return 'Enter your username or email';
   }
 };
 
-const ResetPassword = () => {
-  const query = new URLSearchParams(useLocation().search);
+const ForgottenPassword = ({ history }) => {
   const [validation, setValidation] = useState({
     state: 'open',
     request: null,
     username: null,
   });
-  const [password, setPassword] = useState('');
-  const [repeatPassword, setRepeatPassword] = useState('');
+  const [username, setUsername] = useState('');
 
   useEffect(() => {
-    if (password.length || repeatPassword.length) {
+    if (username.length) {
       setValidation((x) => ({
         state: x.state,
         request: null,
-        password: null,
-        repeatPassword: null,
+        username: null,
       }));
     }
-  }, [password, repeatPassword]);
+  }, [username]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('submit');
     const newValidation = {
       state: 'open',
       request: null,
-      password: password !== '' ? null : 'invalid password',
-      repeatPassword: password === repeatPassword ? null : 'password mismatch',
+      username: username.length ? null : 'required',
     };
-    if (!newValidation.password && !newValidation.repeatPassword) {
+    if (!newValidation.username) {
       newValidation.state = 'loading';
       setValidation(newValidation);
-      const { data, error } = await resetPassword({
-        password,
-        token: query.get('token'),
-        userId: query.get('id'),
-      });
+      const { data, error } = await requestPasswordReset({ username });
       newValidation.request = error;
       newValidation.state = error ? 'open' : 'success';
-      setPassword('');
-      setRepeatPassword('');
+      setUsername('');
     }
     setValidation({ ...newValidation });
   };
 
-  const handlePasswordInput = (e) => {
-    setPassword(e.target.value);
+  const handleUsernameInput = (e) => {
+    setUsername(e.target.value);
   };
 
-  const handleRepeatPasswordInput = (e) => {
-    setRepeatPassword(e.target.value);
+  const handleCancelClick = () => {
+    history.push('/login');
   };
 
   return (
@@ -119,29 +109,26 @@ const ResetPassword = () => {
       <ErrorMessage error={validation.request}>
         {validation.request}
       </ErrorMessage>
-      <Form show={!validation.sent} onSubmit={handleSubmit}>
-        <ErrorMessage error={validation.password}>
-          {validation.password}
+      <Form show={validation.state !== 'success'} onSubmit={handleSubmit}>
+        <ErrorMessage error={validation.username}>
+          {validation.username}
         </ErrorMessage>
         <Input
-          type="password"
-          error={validation.password}
-          onChange={handlePasswordInput}
-          value={password}
-          placeholder="password"
-        />
-        <ErrorMessage error={validation.repeatPassword}>
-          {validation.repeatPassword}
-        </ErrorMessage>
-
-        <Input
-          type="password"
-          error={validation.repeatPassword}
-          onChange={handleRepeatPasswordInput}
-          value={repeatPassword}
-          placeholder="repeat password"
+          autoCapitalize="none"
+          error={validation.username}
+          onChange={handleUsernameInput}
+          value={username}
+          placeholder="username or email"
         />
         <ButtonContainer>
+          <Button
+            onClick={handleCancelClick}
+            color={theme.colors.elementHighlights.button1}
+            background="transparent"
+            type="button"
+          >
+            Cancel
+          </Button>
           <Button disabled={validation.state === 'loading'} type="submit">
             Submit
           </Button>
@@ -151,4 +138,4 @@ const ResetPassword = () => {
   );
 };
 
-export default withRouter(ResetPassword);
+export default withRouter(ForgottenPassword);

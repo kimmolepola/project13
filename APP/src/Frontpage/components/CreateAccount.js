@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import theme from '../theme';
-import { setToken, signup } from './services/auth.service';
+import theme from '../../theme';
+import { setToken, signup } from '../services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;
@@ -111,13 +111,16 @@ const CreateAccount = ({ user, history, setUser }) => {
 
   return (
     <Container>
-      <Subtitle>Create account</Subtitle>
+      <Subtitle>
+        {validation.state !== 'loading' ? 'Create account' : 'Creating...'}
+      </Subtitle>
       <Form onSubmit={handleSubmit}>
         <ErrorMessage error={validation.create}>
           {validation.create}
         </ErrorMessage>
         <ErrorMessage error={validation.email}>{validation.email}</ErrorMessage>
         <Input
+          type="email"
           error={validation.email}
           onChange={handleEmailInput}
           value={email}

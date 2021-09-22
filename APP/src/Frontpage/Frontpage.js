@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useHistory, Switch, Route } from 'react-router-dom';
 import theme from '../theme';
-import Login from './Login';
-import ForgottenPassword from './ForgottenPassword';
-import CreateAccount from './CreateAccount';
-import ResetPassword from './ResetPassword';
-import LoggedIn from './LoggedIn';
+import Login from './components/Login';
+import ForgottenPassword from './components/ForgottenPassword';
+import CreateAccount from './components/CreateAccount';
+import ResetPassword from './components/ResetPassword';
+import LoggedIn from './components/LoggedIn';
 import { setToken } from './services/auth.service';
+import AppBar from './components/AppBar';
 
 const Title = styled.button`
+  display: ${(props) => (props.show ? '' : 'none')};
   cursor: pointer;
   background: none;
   border: none;
@@ -20,15 +22,18 @@ const Title = styled.button`
 `;
 
 const Container = styled.div`
+.`;
+
+const Container2 = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  top: ${(props) => (props.appbar ? theme.appbarHeight : '0px')};
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
   background: ${theme.colors.mainBackground};
 `;
 
@@ -49,21 +54,23 @@ const Frontpage = () => {
 
   return (
     <Container>
-      <Title onClick={handleTitleClick}>Project13</Title>
-      <Switch>
-        <Route path="/resetpassword" component={ResetPassword} />
-        <Route path="/forgottenpassword" component={ForgottenPassword} />
-        <Route path="/createaccount">
-          <CreateAccount user={user} setUser={setUser} history={history} />
-        </Route>
-        <Route path="/login">
-          <Login user={user} setUser={setUser} history={history} />
-        </Route>
-        <Route path="/">
-          <Login user={user} setUser={setUser} history={history} />
-          <LoggedIn user={user} setUser={setUser} history={history} />
-        </Route>
-      </Switch>
+      <AppBar history={history} setUser={setUser} user={user} />
+      <Container2 appbar={user}>
+        <Title show={!user} onClick={handleTitleClick}>
+          Project13
+        </Title>
+        <Switch>
+          <Route path="/resetpassword" component={ResetPassword} />
+          <Route path="/forgottenpassword" component={ForgottenPassword} />
+          <Route path="/createaccount">
+            <CreateAccount user={user} setUser={setUser} history={history} />
+          </Route>
+          <Route path="/">
+            <Login user={user} setUser={setUser} history={history} />
+            <LoggedIn user={user} setUser={setUser} history={history} />
+          </Route>
+        </Switch>
+      </Container2>
     </Container>
   );
 };

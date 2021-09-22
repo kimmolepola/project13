@@ -7,17 +7,19 @@ const updateUsername = async (token, data) => {
   console.log(token, data);
   const decodedToken = JWT.verify(token, JWTSecret);
   if (!token || !decodedToken.id) {
-    throw new Error('token missing or invalid', 401);
+    const err = new Error('Invalid or missing token');
+    err.statusCode = 401;
+    throw err;
   }
 
   try {
     await User.updateOne(
       { _id: decodedToken.id },
       { $set: { username: data.username } },
-      { new: true },
+      { new: true, runValidators: true, context: 'query' },
     );
   } catch (error) {
-    throw new Error('failed to update username', 500);
+    throw new Error('Failed to update username');
   }
 
   const user = await User.findOne({ _id: decodedToken.id });
