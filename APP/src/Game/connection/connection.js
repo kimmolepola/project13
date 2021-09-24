@@ -6,6 +6,7 @@ import { receiveData } from '../messageHandler';
 const connect = ({
   objects,
   objectIds,
+  user,
   setConnectionMessage,
   setIds,
   setId,
@@ -40,7 +41,17 @@ const connect = ({
     }
   };
 
-  const socket = io(process.env.REACT_APP_SIGNALING_SERVER);
+  const socket = io(process.env.REACT_APP_SIGNALING_SERVER, {
+    auth: {
+      token: user ? user.token : null,
+    },
+  });
+
+  socket.on('connect_error', (err) => {
+    console.log(err instanceof Error); // true
+    console.log(err.message); // not authorized
+    console.log(err.data); // { content: "Please retry later" }
+  });
 
   socket.on('connect', () => {
     setConnectionMessage('signaling socket connected');

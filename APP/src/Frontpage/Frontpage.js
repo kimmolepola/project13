@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { useHistory, Switch, Route } from 'react-router-dom';
 import theme from '../theme';
@@ -7,7 +7,6 @@ import ForgottenPassword from './components/ForgottenPassword';
 import CreateAccount from './components/CreateAccount';
 import ResetPassword from './components/ResetPassword';
 import LoggedIn from './components/LoggedIn';
-import { setToken } from './services/auth.service';
 import AppBar from './components/AppBar';
 
 const Title = styled.button`
@@ -37,16 +36,8 @@ const Container2 = styled.div`
   background: ${theme.colors.mainBackground};
 `;
 
-const Frontpage = () => {
+const Frontpage = ({ user, setUser }) => {
   const history = useHistory();
-  const [user, setUser] = useState(
-    JSON.parse(window.localStorage.getItem('loggedProject13User')),
-  );
-
-  useEffect(() => {
-    window.localStorage.setItem('loggedProject13User', JSON.stringify(user));
-    setToken(user ? user.token : null);
-  }, [user]);
 
   const handleTitleClick = () => {
     history.push('/');

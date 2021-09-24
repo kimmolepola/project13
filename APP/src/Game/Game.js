@@ -32,7 +32,7 @@ const cleanup = (idsNew, objects) => {
   objects.current = objectsNew;
 };
 
-const Game = () => {
+const Game = ({ user }) => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
@@ -76,6 +76,7 @@ const Game = () => {
     const signalingSocket = connect({
       objects,
       objectIds,
+      user,
       setConnectionMessage,
       setIds,
       setId,

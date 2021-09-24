@@ -7,10 +7,8 @@ const bcryptSalt = process.env.BCRYPT_SALT;
 
 const userSchema = new Schema(
   {
-    id2: {
-      type: String,
-      required: true,
-      unique: true,
+    score: {
+      type: Number,
     },
     username: {
       type: String,

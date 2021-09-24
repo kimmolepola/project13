@@ -87,9 +87,9 @@ const Login = ({ user, setUser, history }) => {
       if (!error) {
         setUser(data);
         setUsername('');
-        setPassword('');
       }
     }
+    setPassword('');
     setValidation({ ...newValidation });
   };
 

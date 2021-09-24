@@ -7,7 +7,7 @@ const sendEmail = require('../utils/email/sendEmail');
 
 const JWTSecret = process.env.JWT_SECRET;
 const bcryptSalt = process.env.BCRYPT_SALT;
-const clientURL = process.env.CLIENT_URL;
+const client = process.env.CLIENT;
 
 /* eslint-disable no-underscore-dangle, no-return-assign, no-param-reassign */
 const login = async (data) => {
@@ -27,10 +27,9 @@ const login = async (data) => {
   }
 
   const token = JWT.sign({ id: user._id }, JWTSecret);
-  const id2token = JWT.sign({ id2: user.id2 }, JWTSecret);
 
   return (data = {
-    id2token,
+    score: user.score,
     userId: user._id,
     email: user.email,
     username: user.username,
@@ -45,12 +44,11 @@ const signup = async (data) => {
     err.statusCode = 409;
     throw err;
   }
-  data.id2 = Math.random().toString();
+  data.score = 0;
   data.username = Math.random().toString();
   user = new User(data);
 
   const token = JWT.sign({ id: user._id }, JWTSecret);
-  const id2token = JWT.sign({ id2: user.id2 }, JWTSecret);
   await user.save();
 
   try {
@@ -67,7 +65,7 @@ const signup = async (data) => {
   }
 
   return (data = {
-    id2token,
+    score: user.score,
     userId: user._id,
     email: user.email,
     username: user.username,
@@ -104,7 +102,7 @@ const requestPasswordReset = async (username) => {
   console.log('new, id:', user._id, 'token:', hash);
 
   // const link = `https://${clientURL}/passwordreset?token=${resetToken}&id=${user._id}`;
-  const link = `http://${clientURL}/resetpassword?token=${resetToken}&id=${user._id}`;
+  const link = `${client}/resetpassword?token=${resetToken}&id=${user._id}`;
 
   try {
     await sendEmail(

@@ -1,5 +1,5 @@
 {
-  "name": "login-server",
+  "name": "project13-backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -19,7 +19,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.12",
     "mongoose-unique-validator": "^2.0.3",
-    "nodemailer": "^6.4.17"
+    "nodemailer": "^6.4.17",
+    "socket.io": "^4.2.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.12"

@@ -24,11 +24,9 @@ const updateUsername = async (token, data) => {
 
   const user = await User.findOne({ _id: decodedToken.id });
 
-  const id2token = JWT.sign({ id2: user.id2 }, JWTSecret);
-
   /* eslint-disable no-underscore-dangle, no-return-assign, no-param-reassign */
   return (data = {
-    id2token,
+    score: user.score,
     userId: user._id,
     email: user.email,
     username: user.username,

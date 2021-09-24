@@ -29,6 +29,7 @@ const Form = styled.form`
 const Container = styled.div`
   display: ${(props) => (props.show ? 'flex' : 'none')};
   flex-direction: column;
+  align-items: center;
 `;
 
 const LoggedIn = ({ user, setUser, history }) => {
@@ -48,27 +49,6 @@ const LoggedIn = ({ user, setUser, history }) => {
     });
   }, [username]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newValidation = {
-      state: 'open',
-      update: null,
-      username: username.length ? null : 'can not be empty',
-    };
-    if (!newValidation.username) {
-      newValidation.state = 'loading';
-      setValidation(newValidation);
-      const { data, error } = await updateUsername(username);
-      newValidation.login = error;
-      newValidation.state = 'open';
-      if (!error) {
-        setUser(data);
-        setUsername('');
-      }
-    }
-    setValidation({ ...newValidation });
-  };
-
   const handlePlayClick = () => {
     history.push('/play');
   };
@@ -80,6 +60,7 @@ const LoggedIn = ({ user, setUser, history }) => {
           <Settings history={history} user={user} setUser={setUser} />
         </Route>
         <Route path="/">
+          <div style={{ margin: 40 }}>Score: {user ? user.score : null}</div>
           <Button onClick={handlePlayClick} type="button">
             play
           </Button>
