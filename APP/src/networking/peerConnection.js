@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import iceServers from './iceServers';
 import { receiveData } from './services/game.service';
 import setupRelayConnection from './relay';
+import { saveGameState } from './services/user.service';
 
 const connect = ({
   objects,
@@ -219,6 +220,14 @@ const connect = ({
   socket.on('peerDisconnect', (remoteId) => {
     setConnectionMessage(`peer ${remoteId} disconnect`);
     console.log('peer', remoteId, 'disconnect');
+    if (main && main === ownId) {
+      saveGameState(
+        objectIds.current.map((x) => ({
+          playerId: objects.current[x].id,
+          score: objects.current[x].score,
+        })),
+      );
+    }
     handleDeleteId(remoteId);
     let remotes;
     setRemotes((x) => {

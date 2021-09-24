@@ -46,6 +46,9 @@ const JWTSecret = process.env.JWT_SECRET;
 const clients = {};
 let main = null;
 
+// eslint-disable-next-line import/prefer-default-export
+module.exports = { getMain: () => main };
+
 io.use((socket, next) => {
   const { token } = socket.handshake.auth;
   console.log(token);

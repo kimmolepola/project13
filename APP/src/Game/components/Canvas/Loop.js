@@ -175,7 +175,9 @@ const Loop = ({
   useFrame((state, delta) => {
     if (objects.current[id]) {
       if (Date.now() > nextScoreTime) {
-        objects.current[id].score += 1;
+        objectIds.current.forEach((x) => {
+          objects.current[x].score += 1;
+        });
         score.current.textContent = `Score: ${objects.current[id].score}`;
         nextScoreTime += 6700;
       }

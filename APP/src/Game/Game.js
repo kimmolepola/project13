@@ -5,6 +5,7 @@ import AppContext from '../context/appContext';
 import connect from '../networking/peerConnection';
 import { subscribeToKeyboardEvents } from './controls';
 import { sendDataOnOrderedChannelsAndRelay } from '../networking/services/game.service';
+import { saveGameState } from '../networking/services/user.service';
 import UI from './components/UI';
 
 const mainUpdatePeers = (
@@ -67,6 +68,17 @@ const Game = ({ history, user }) => {
   const text = useRef();
   const score = useRef({ value: 0, textContent: 0 });
 
+  const saveState = () => {
+    if (main && main === id) {
+      saveGameState(
+        objectIds.current.map((x) => ({
+          playerId: objects.current[x].id,
+          score: objects.current[x].score,
+        })),
+      );
+    }
+  };
+
   const disconnect = () => {
     Object.keys(remotes).forEach((x) => {
       if (remotes[x].pc) remotes[x].pc.close();
@@ -120,6 +132,7 @@ const Game = ({ history, user }) => {
       setRemotes,
     });
     return () => {
+      saveState();
       disconnect();
     };
   }, []);
@@ -140,6 +153,7 @@ const Game = ({ history, user }) => {
       />
       <AppContext.Provider
         value={{
+          saveState,
           history,
           disconnect,
           score,

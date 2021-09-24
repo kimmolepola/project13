@@ -65,6 +65,7 @@ const Container = styled.div`
 
 const Sidepanel = () => {
   const {
+    saveState,
     disconnect,
     history,
     score,
@@ -76,6 +77,7 @@ const Sidepanel = () => {
   } = useContext(appContext);
 
   const handleQuit = () => {
+    saveState();
     disconnect();
     history.push('/');
   };
