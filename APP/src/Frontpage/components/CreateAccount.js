@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import theme from '../../theme';
-import { setToken, signup } from '../services/auth.service';
+import { signup } from '../../networking/services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;

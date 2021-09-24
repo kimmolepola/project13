@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useHistory, Switch, Route } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import theme from '../theme';
 import Login from './components/Login';
 import ForgottenPassword from './components/ForgottenPassword';
@@ -36,9 +36,7 @@ const Container2 = styled.div`
   background: ${theme.colors.mainBackground};
 `;
 
-const Frontpage = ({ user, setUser }) => {
-  const history = useHistory();
-
+const Frontpage = ({ history, user, setUser }) => {
   const handleTitleClick = () => {
     history.push('/');
   };

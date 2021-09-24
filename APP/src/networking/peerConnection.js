@@ -1,7 +1,8 @@
 import adapter from 'webrtc-adapter';
 import { io } from 'socket.io-client';
 import iceServers from './iceServers';
-import { receiveData } from '../messageHandler';
+import { receiveData } from './services/game.service';
+import setupRelayConnection from './relay';
 
 const connect = ({
   objects,
@@ -13,6 +14,7 @@ const connect = ({
   setChatMessages,
   setMain,
   setChannels,
+  setSignaler,
   setRelay,
   setRemotes,
 }) => {
@@ -61,6 +63,7 @@ const connect = ({
       token: user ? user.token : null,
     },
   });
+  setSignaler(socket);
 
   socket.on('connect_error', (err) => {
     console.log(err instanceof Error); // true
@@ -80,49 +83,20 @@ const connect = ({
   const handleFailed = (remoteId) => {
     setConnectionMessage(`peer ${remoteId}, using relay connection`);
     console.log('peer', remoteId, 'using relay connection');
-    let relaySocket;
-    setRelay((x) => {
-      relaySocket = x;
-      return x;
+    setupRelayConnection({
+      setRelay,
+      setIds,
+      ownId,
+      main,
+      setConnectionMessage,
+      setChatMessages,
+      objectIds,
+      objects,
+      setChannels,
+      setMain,
+      setRemotes,
+      remoteId,
     });
-    if (!relaySocket) {
-      relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
-      relaySocket.on('newPeer', () => {
-        // to trigger network message of current objects which the new peer will need
-        setIds((xx) => [...xx]);
-      });
-      relaySocket.on('connect', () => {
-        relaySocket.emit('clientId', ownId);
-        if (main === ownId) {
-          relaySocket.emit('main');
-        }
-        setConnectionMessage('relay socket connected');
-        console.log('relay socket connected');
-      });
-      relaySocket.on('disconnect', () => {
-        setConnectionMessage('relay socket disconnected');
-        console.log('relay socket disconnected');
-      });
-      relaySocket.on('data', (data, clientId) =>
-        receiveData(
-          clientId,
-          data,
-          setChatMessages,
-          objectIds,
-          objects,
-          setIds,
-          ownId,
-          setChannels,
-          setRelay,
-          setMain,
-        ),
-      );
-    }
-    setRelay(relaySocket);
-    setRemotes((x) => ({
-      ...x,
-      [remoteId]: { ...x[remoteId], relaySocket: true },
-    }));
   };
 
   const start = (remoteId) => {
@@ -317,7 +291,6 @@ const connect = ({
       console.error(err);
     }
   });
-  return socket;
 };
 
 export default connect;

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
 import theme from '../../../theme';
-import appContext from '../../context/appContext';
+import appContext from '../../../context/appContext';
 import { handlePressed, handleReleased } from '../../controls';
 
 const Infotext = styled.div`

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useLocation, withRouter } from 'react-router-dom';
 import theme from '../../theme';
-import { resetPassword } from '../services/auth.service';
+import { resetPassword } from '../../networking/services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;

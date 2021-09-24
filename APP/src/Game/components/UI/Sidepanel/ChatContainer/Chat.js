@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
 import theme from '../../../../../theme';
-import appContext from '../../../../context/appContext';
+import appContext from '../../../../../context/appContext';
 
 const Avatar = styled.img`
   margin-left: auto;

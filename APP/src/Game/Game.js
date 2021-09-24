@@ -1,10 +1,10 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import debounce from 'lodash.debounce';
 import Canvas from './components/Canvas';
-import AppContext from './context/appContext';
-import connect from './connection/connection';
+import AppContext from '../context/appContext';
+import connect from '../networking/peerConnection';
 import { subscribeToKeyboardEvents } from './controls';
-import { sendDataOnOrderedChannelsAndRelay } from './messageHandler';
+import { sendDataOnOrderedChannelsAndRelay } from '../networking/services/game.service';
 import UI from './components/UI';
 
 const mainUpdatePeers = (
@@ -51,11 +51,12 @@ const cleanup = (idsNew, objects) => {
   objects.current = objectsNew;
 };
 
-const Game = ({ user }) => {
+const Game = ({ history, user }) => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
   const [channels, setChannels] = useState({ ordered: [], unordered: [] });
+  const [signaler, setSignaler] = useState();
   const [relay, setRelay] = useState();
   const [remotes, setRemotes] = useState({});
   const [chatMessages, setChatMessages] = useState([]);
@@ -65,6 +66,17 @@ const Game = ({ user }) => {
   const objectIds = useRef([]);
   const text = useRef();
   const score = useRef({ value: 0, textContent: 0 });
+
+  const disconnect = () => {
+    Object.keys(remotes).forEach((x) => {
+      if (remotes[x].pc) remotes[x].pc.close();
+    });
+    setRemotes({});
+    if (relay) relay.disconnect();
+    setRelay(undefined);
+    if (signaler) signaler.disconnect();
+    setSignaler(undefined);
+  };
 
   const resizeHandler = () => {
     setWindowHeight(window.innerHeight);
@@ -93,7 +105,7 @@ const Game = ({ user }) => {
   }, [id]);
 
   useEffect(() => {
-    const signalingSocket = connect({
+    connect({
       objects,
       objectIds,
       user,
@@ -103,17 +115,12 @@ const Game = ({ user }) => {
       setChatMessages,
       setMain,
       setChannels,
+      setSignaler,
       setRelay,
       setRemotes,
     });
     return () => {
-      Object.keys(remotes).forEach((x) => {
-        if (remotes[x].pc) remotes[x].pc.close();
-      });
-      setRemotes({});
-      if (relay) relay.disconnect();
-      setRelay(undefined);
-      if (signalingSocket) signalingSocket.disconnect();
+      disconnect();
     };
   }, []);
 
@@ -133,6 +140,8 @@ const Game = ({ user }) => {
       />
       <AppContext.Provider
         value={{
+          history,
+          disconnect,
           score,
           windowHeight,
           objects,

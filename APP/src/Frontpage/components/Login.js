@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { withRouter } from 'react-router-dom';
 import theme from '../../theme';
-import { setToken, login } from '../services/auth.service';
+import { login } from '../../networking/services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;
@@ -165,4 +164,4 @@ const Login = ({ user, setUser, history }) => {
   );
 };
 
-export default withRouter(Login);
+export default Login;

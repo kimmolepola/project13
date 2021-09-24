@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { updateUsername } from '../services/user.service';
+import { updateUsername } from '../../networking/services/user.service';
 import theme from '../../theme';
 
 const Arrow = styled.button`

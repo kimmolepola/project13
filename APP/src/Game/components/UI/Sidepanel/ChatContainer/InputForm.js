@@ -1,8 +1,8 @@
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import theme from '../../../../../theme';
-import appContext from '../../../../context/appContext';
-import { sendDataOnOrderedChannelsAndRelay } from '../../../../messageHandler';
+import appContext from '../../../../../context/appContext';
+import { sendDataOnOrderedChannelsAndRelay } from '../../../../../networking/services/game.service';
 
 const Button = styled.button`
   width: 12%;

@@ -1,4 +1,4 @@
-import { chatMessageTimeToLiveSeconds } from './parameters';
+import { chatMessageTimeToLiveSeconds } from '../../Game/parameters';
 
 export const sendDataOnRelay = (data, relay) => {
   if (relay) {

@@ -12,7 +12,7 @@ import {
 import {
   sendDataOnUnorderedChannels,
   sendDataOnRelay,
-} from '../../messageHandler';
+} from '../../../networking/services/game.service';
 
 const Loop = ({
   score,
