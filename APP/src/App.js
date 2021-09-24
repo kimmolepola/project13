@@ -10,7 +10,6 @@ const App = () => {
   );
 
   useEffect(() => {
-    console.log('user:', user);
     window.localStorage.setItem('loggedProject13User', JSON.stringify(user));
     setToken(user ? user.token : null);
   }, [user]);
@@ -19,7 +18,7 @@ const App = () => {
     <Router>
       <Switch>
         <Route path="/play">
-          <Game user={user} />
+          <Game user={user} setUser={setUser} />
         </Route>
         <Route path="/">
           <Frontpage setUser={setUser} user={user} />

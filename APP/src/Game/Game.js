@@ -7,15 +7,34 @@ import { subscribeToKeyboardEvents } from './controls';
 import { sendDataOnOrderedChannelsAndRelay } from './messageHandler';
 import UI from './components/UI';
 
-const updatePeers = (idsNew, main, id, objectIds, objects, channels, relay) => {
+const mainUpdatePeers = (
+  idsNew,
+  main,
+  id,
+  objectIds,
+  objects,
+  channels,
+  relay,
+) => {
   if (main && main === id) {
     const objectsNew = {};
     objectIds.current.forEach((x) => {
       const obj = objects.current[x];
       if (obj) {
         objectsNew[x] = {
-          startQuaternion: obj.elref.quaternion.toArray(),
-          startPosition: obj.elref.position.toArray(),
+          score: obj.score,
+          startPosition: obj.elref ? obj.elref.position.toArray() : [0, 0, 1],
+          startQuaternion: obj.elref
+            ? obj.elref.quaternion.toArray()
+            : [0, 0, 0, 1],
+          controls: obj.controls,
+          controlsOverChannels: obj.controlsOverChannels,
+          controlsOverRelay: obj.controlsOverRelay,
+          speed: obj.speed,
+          rotationSpeed: obj.rotationSpeed,
+          backendPosition: obj.backendPosition,
+          backendQuaternion: obj.backendQuaternion,
+          keyDowns: obj.keyDowns,
         };
       }
     });
@@ -45,6 +64,7 @@ const Game = ({ user }) => {
   const objects = useRef({});
   const objectIds = useRef([]);
   const text = useRef();
+  const score = useRef({ value: 0, textContent: 0 });
 
   const resizeHandler = () => {
     setWindowHeight(window.innerHeight);
@@ -56,7 +76,7 @@ const Game = ({ user }) => {
 
   useEffect(() => {
     cleanup(ids, objects);
-    updatePeers(ids, main, id, objectIds, objects, channels, relay);
+    mainUpdatePeers(ids, main, id, objectIds, objects, channels, relay);
   }, [ids, channels, relay]);
 
   useEffect(() => {
@@ -100,6 +120,7 @@ const Game = ({ user }) => {
   return (
     <>
       <Canvas
+        score={score}
         windowHeight={windowHeight}
         ids={ids}
         relay={relay}
@@ -112,6 +133,7 @@ const Game = ({ user }) => {
       />
       <AppContext.Provider
         value={{
+          score,
           windowHeight,
           objects,
           main,

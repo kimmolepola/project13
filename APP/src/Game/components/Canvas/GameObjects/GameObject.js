@@ -1,30 +1,13 @@
 import React, { memo } from 'react';
-import * as THREE from 'three';
-import { speed, rotationSpeed } from '../../../parameters';
 
 const GameObject = ({ ids, objects, id, map, objectId }) => (
   <mesh
     ref={(ref) => {
-      const obsCur = objects.current;
-      const obj = obsCur[objectId];
-      if (ref && (!obj || (obj && !obj.elref))) {
-        obsCur[objectId] = {
-          controls: { left: 0, right: 0 },
-          controlsOverChannels: { left: 0, right: 0 },
-          controlsOverRelay: { left: 0, right: 0 },
-          speed,
-          rotationSpeed,
-          backendPosition: { x: 0, y: 0, z: 1 },
-          backendQuaternion: [0, 0, 0, 1],
-          elref: ref,
-          keyDowns: [],
-          ...obj,
-        };
-        const o = obsCur[objectId];
-        if (o.startPosition && o.startQuaternion) {
-          o.elref.position.set(...o.startPosition);
-          o.elref.quaternion.set(...o.startQuaternion);
-        }
+      const obj = objects.current[objectId];
+      if (ref && obj && !obj.elref) {
+        obj.elref = ref;
+        obj.elref.position.set(...obj.startPosition);
+        obj.elref.quaternion.set(...obj.startQuaternion);
       }
     }}
   >

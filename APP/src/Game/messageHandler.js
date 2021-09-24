@@ -104,6 +104,7 @@ export const receiveData = (
       }
       break;
     case 'setObjects': {
+      // only non-main will receive these
       objectIds.current.splice(0, objectIds.current.length);
       objectIds.current.push(...data.ids);
       setIds(data.ids);
@@ -112,13 +113,10 @@ export const receiveData = (
         const obj = objs[x];
         const dataObj = data.objects[x];
         if (obj && obj.elref) {
-          obj.elref.position.set(...dataObj.startPosition);
-          obj.elref.quaternion.set(...dataObj.startQuaternion);
+          // obj.elref.position.set(...dataObj.startPosition);
+          // obj.elref.quaternion.set(...dataObj.startQuaternion);
         } else {
-          objs[x] = {
-            startPosition: dataObj.startPosition,
-            startQuaternion: dataObj.startQuaternion,
-          };
+          objs[x] = dataObj;
         }
       });
       break;

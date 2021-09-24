@@ -14,11 +14,21 @@ import {
   sendDataOnRelay,
 } from '../../messageHandler';
 
-const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
+const Loop = ({
+  score,
+  relay,
+  channels,
+  main,
+  text,
+  id,
+  objectIds,
+  objects,
+}) => {
   /* eslint-disable no-param-reassign */
   const qua = new Quaternion();
   let nextSendTime = Date.now();
   let nextSendTimeRelay = Date.now();
+  let nextScoreTime = Date.now();
 
   const handleSelf = (ownObj, delta) => {
     for (let ii = ownObj.keyDowns.length - 1; ii > -1; ii -= 1) {
@@ -163,34 +173,43 @@ const Loop = ({ relay, channels, main, text, id, objectIds, objects }) => {
   };
 
   useFrame((state, delta) => {
-    if (Date.now() > nextSendTime && objects.current[id]) {
-      nextSendTime =
-        Date.now() + (main && main === id ? sendIntervalMain : sendInterval);
-      if (main && main === id) {
-        sendDataOnUnorderedChannels(getUpdateData(false), channels);
-      } else {
-        sendDataOnUnorderedChannels(getControlsData(false), channels);
+    if (objects.current[id]) {
+      if (Date.now() > nextScoreTime) {
+        objects.current[id].score += 1;
+        score.current.textContent = `Score: ${objects.current[id].score}`;
+        nextScoreTime += 6700;
       }
-    }
-    if (Date.now() > nextSendTimeRelay && objects.current[id]) {
-      nextSendTimeRelay =
-        Date.now() +
-        (main && main === id ? relaySendIntervalMain : relaySendInterval);
-      if (main && main === id) {
-        sendDataOnRelay(getUpdateData(true), relay);
-      } else {
-        sendDataOnRelay(getControlsData(true), relay);
+      if (Date.now() > nextSendTime && objects.current[id]) {
+        nextSendTime =
+          Date.now() + (main && main === id ? sendIntervalMain : sendInterval);
+        if (main && main === id) {
+          sendDataOnUnorderedChannels(getUpdateData(false), channels);
+        } else {
+          sendDataOnUnorderedChannels(getControlsData(false), channels);
+        }
       }
-    }
+      if (Date.now() > nextSendTimeRelay && objects.current[id]) {
+        nextSendTimeRelay =
+          Date.now() +
+          (main && main === id ? relaySendIntervalMain : relaySendInterval);
+        if (main && main === id) {
+          sendDataOnRelay(getUpdateData(true), relay);
+        } else {
+          sendDataOnRelay(getControlsData(true), relay);
+        }
+      }
 
-    const ownRef = objects.current[id] ? objects.current[id].elref : undefined;
+      const ownRef = objects.current[id]
+        ? objects.current[id].elref
+        : undefined;
 
-    if (ownRef && ownRef.position) {
-      handleSelf(objects.current[id], delta);
-      handleCamera(state, ownRef);
-      handleText(ownRef);
+      if (ownRef && ownRef.position) {
+        handleSelf(objects.current[id], delta);
+        handleCamera(state, ownRef);
+        handleText(ownRef);
+      }
+      handleObjects(delta);
     }
-    handleObjects(delta);
   });
   return <></>;
 };

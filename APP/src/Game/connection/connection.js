@@ -27,10 +27,25 @@ const connect = ({
     setIds((x) => x.filter((xx) => xx !== delId));
   };
 
-  const handleNewId = (newId) => {
+  const mainHandleNewId = (newId) => {
     if (main && main === ownId) {
       if (!objectIds.current.includes(newId)) {
         objectIds.current.push(newId);
+        const obsCur = objects.current;
+        // here fetch object info from database and create object
+        obsCur[newId] = {
+          score: 0,
+          startPosition: [0, 0, 1],
+          startQuaternion: [0, 0, 0, 1],
+          controls: { left: 0, right: 0 },
+          controlsOverChannels: { left: 0, right: 0 },
+          controlsOverRelay: { left: 0, right: 0 },
+          speed: 0.3,
+          rotationSpeed: 1,
+          backendPosition: { x: 0, y: 0, z: 1 },
+          backendQuaternion: [0, 0, 0, 1],
+          keyDowns: [],
+        };
       }
       setIds((x) => {
         if (!x.includes(newId)) {
@@ -73,7 +88,7 @@ const connect = ({
     if (!relaySocket) {
       relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
       relaySocket.on('newPeer', () => {
-        // to trigger network message of current objects which this new peer will need
+        // to trigger network message of current objects which the new peer will need
         setIds((xx) => [...xx]);
       });
       relaySocket.on('connect', () => {
@@ -120,11 +135,11 @@ const connect = ({
         setConnectionMessage(`peer ${remoteId}, connection failed`);
         console.log('peer', remoteId, 'peer connection failed');
         handleFailed(remoteId);
-        handleNewId(remoteId);
+        mainHandleNewId(remoteId);
       } else if (pc.connectionState === 'connected') {
         setConnectionMessage(`peer ${remoteId}, connection ready`);
         console.log('peer', remoteId, 'peer connection ready');
-        handleNewId(remoteId);
+        mainHandleNewId(remoteId);
       } else if (pc.connectionState === 'closed') {
         setConnectionMessage(`peer ${remoteId}, connection closed`);
         console.log('peer', remoteId, 'peer connection closed');
@@ -265,7 +280,7 @@ const connect = ({
       return x;
     });
     if (relay) relay.emit('main', true);
-    handleNewId(main);
+    mainHandleNewId(main);
     console.log('you are main');
   });
 

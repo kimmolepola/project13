@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import ChatContainer from './Sidepanel/ChatContainer';
 import appContext from '../../context/appContext';
@@ -39,7 +39,7 @@ const Container = styled.div`
 `;
 
 const Sidepanel = () => {
-  const { windowHeight, id, main, ids, connectionMessage } =
+  const { score, windowHeight, id, main, ids, connectionMessage } =
     useContext(appContext);
 
   return (
@@ -48,6 +48,13 @@ const Sidepanel = () => {
         <div>{main && main === id ? 'you are the game host' : null}</div>
         <div>{`players: ${ids.length}`}</div>
         <div> {connectionMessage}</div>
+      </InfoBox>
+      <InfoBox>
+        <p />
+        <p />
+        <div ref={score} />
+        <p />
+        <p />
       </InfoBox>
       <ChatContainer />
     </Container>

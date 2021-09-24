@@ -82,7 +82,6 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('submit');
     const newValidation = {
       state: 'open',
       request: null,
