@@ -5,7 +5,7 @@ import AppContext from '../context/appContext';
 import connect from '../networking/peerConnection';
 import { subscribeToKeyboardEvents } from './controls';
 import { sendDataOnOrderedChannelsAndRelay } from '../networking/services/game.service';
-import { saveGameState } from '../networking/services/user.service';
+import { saveGameState } from '../networking/services/gameObject.service';
 import UI from './components/UI';
 
 const mainUpdatePeers = (
@@ -52,7 +52,7 @@ const cleanup = (idsNew, objects) => {
   objects.current = objectsNew;
 };
 
-const Game = ({ history, user }) => {
+const Game = ({ refreshUser, history, user }) => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
@@ -69,14 +69,16 @@ const Game = ({ history, user }) => {
   const score = useRef({ value: 0, textContent: 0 });
 
   const saveState = async () => {
-    if (main && main === id) {
+    if (main && main === id && !id.includes('guest')) {
       const { error, data } = await saveGameState(
         objectIds.current.map((x) => ({
           playerId: x,
           score: objects.current[x].score,
         })),
       );
-      console.log(error, data);
+      if (error) {
+        console.error(error);
+      }
     }
     return true;
   };
@@ -161,6 +163,7 @@ const Game = ({ history, user }) => {
       />
       <AppContext.Provider
         value={{
+          refreshUser,
           quit,
           history,
           score,

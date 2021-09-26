@@ -61,25 +61,28 @@ const stateText = (state) => {
 
 const ForgottenPassword = ({ history }) => {
   const [validation, setValidation] = useState({
+    dirty: false,
     state: 'open',
     request: null,
     username: null,
   });
   const [username, setUsername] = useState('');
 
-  useEffect(() => {
-    if (username.length) {
-      setValidation((x) => ({
-        state: x.state,
+  const resetValidation = () => {
+    if (validation.dirty) {
+      setValidation({
+        dirty: false,
+        state: 'open',
         request: null,
         username: null,
-      }));
+      });
     }
-  }, [username]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newValidation = {
+      dirty: true,
       state: 'open',
       request: null,
       username: username.length ? null : 'required',
@@ -96,6 +99,7 @@ const ForgottenPassword = ({ history }) => {
   };
 
   const handleUsernameInput = (e) => {
+    resetValidation();
     setUsername(e.target.value);
   };
 

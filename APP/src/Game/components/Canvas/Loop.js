@@ -179,7 +179,7 @@ const Loop = ({
           objects.current[x].score += 1;
         });
         score.current.textContent = `Score: ${objects.current[id].score}`;
-        nextScoreTime += 6700;
+        nextScoreTime += 3700;
       }
       if (Date.now() > nextSendTime && objects.current[id]) {
         nextSendTime =

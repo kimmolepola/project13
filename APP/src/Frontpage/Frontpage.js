@@ -36,7 +36,7 @@ const Container2 = styled.div`
   background: ${theme.colors.mainBackground};
 `;
 
-const Frontpage = ({ history, user, setUser }) => {
+const Frontpage = ({ refreshUser, history, user, setUser }) => {
   const handleTitleClick = () => {
     history.push('/');
   };
@@ -56,7 +56,12 @@ const Frontpage = ({ history, user, setUser }) => {
           </Route>
           <Route path="/">
             <Login user={user} setUser={setUser} history={history} />
-            <LoggedIn user={user} setUser={setUser} history={history} />
+            <LoggedIn
+              refreshUser={refreshUser}
+              user={user}
+              setUser={setUser}
+              history={history}
+            />
           </Route>
         </Switch>
       </Container2>

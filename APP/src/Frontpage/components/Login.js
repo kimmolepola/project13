@@ -52,6 +52,7 @@ const Container = styled.div`
 
 const Login = ({ user, setUser, history }) => {
   const [validation, setValidation] = useState({
+    dirty: false,
     state: 'open',
     login: null,
     username: null,
@@ -60,18 +61,22 @@ const Login = ({ user, setUser, history }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  useEffect(() => {
-    setValidation({
-      state: 'open',
-      login: null,
-      username: null,
-      password: null,
-    });
-  }, [username, password]);
+  const resetValidation = () => {
+    if (validation.dirty) {
+      setValidation({
+        dirty: false,
+        state: 'open',
+        login: null,
+        username: null,
+        password: null,
+      });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newValidation = {
+      dirty: true,
       state: 'open',
       login: null,
       username: username.length ? null : 'required',
@@ -93,10 +98,12 @@ const Login = ({ user, setUser, history }) => {
   };
 
   const handleUsernameInput = (e) => {
+    resetValidation();
     setUsername(e.target.value);
   };
 
   const handlePasswordInput = (e) => {
+    resetValidation();
     setPassword(e.target.value);
   };
 

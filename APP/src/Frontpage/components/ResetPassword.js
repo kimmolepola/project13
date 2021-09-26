@@ -62,27 +62,31 @@ const stateText = (state) => {
 const ResetPassword = () => {
   const query = new URLSearchParams(useLocation().search);
   const [validation, setValidation] = useState({
+    dirty: false,
     state: 'open',
     request: null,
-    username: null,
+    password: null,
+    repeatPassword: null,
   });
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
 
-  useEffect(() => {
-    if (password.length || repeatPassword.length) {
-      setValidation((x) => ({
-        state: x.state,
+  const resetValidation = () => {
+    if (validation.dirty) {
+      setValidation({
+        dirty: false,
+        state: 'open',
         request: null,
         password: null,
         repeatPassword: null,
-      }));
+      });
     }
-  }, [password, repeatPassword]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newValidation = {
+      dirty: true,
       state: 'open',
       request: null,
       password: password !== '' ? null : 'invalid password',
@@ -98,17 +102,19 @@ const ResetPassword = () => {
       });
       newValidation.request = error;
       newValidation.state = error ? 'open' : 'success';
-      setPassword('');
-      setRepeatPassword('');
     }
+    setPassword('');
+    setRepeatPassword('');
     setValidation({ ...newValidation });
   };
 
   const handlePasswordInput = (e) => {
+    resetValidation();
     setPassword(e.target.value);
   };
 
   const handleRepeatPasswordInput = (e) => {
+    resetValidation();
     setRepeatPassword(e.target.value);
   };
 

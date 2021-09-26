@@ -12,6 +12,23 @@ const Input = styled.input`
   ${(props) => props.error && 'border-color: red;'}
 `;
 
+const RefreshButton = styled.button`
+  ${theme.basicButton}
+  box-shadow: none;
+  border: none;
+  margin: ${theme.margins.large};
+  color: ${theme.colors.elementHighlights.button1};
+  background-color: ${(props) => props.background || 'transparent'};
+  :disabled {
+    background-color: transparent;
+    cursor: default;
+    transform: rotate(20turn);
+    transition-duration: 6s;
+  }
+  font-size: 20px;
+  font-weight: bold;
+`;
+
 const Button = styled.button`
   ${theme.basicButton}
   min-height: 40px;
@@ -32,7 +49,7 @@ const Container = styled.div`
   align-items: center;
 `;
 
-const LoggedIn = ({ user, setUser, history }) => {
+const LoggedIn = ({ refreshUser, user, setUser, history }) => {
   const [validation, setValidation] = useState({
     state: 'open',
     update: null,
@@ -40,6 +57,7 @@ const LoggedIn = ({ user, setUser, history }) => {
   });
   const [username, setUsername] = useState('');
   const [errorText, setErrorText] = useState();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setValidation({
@@ -48,6 +66,13 @@ const LoggedIn = ({ user, setUser, history }) => {
       username: null,
     });
   }, [username]);
+
+  const handleRefreshClick = async () => {
+    setLoading(true);
+    await refreshUser();
+    setLoading(false);
+    console.log('refreshed');
+  };
 
   const handlePlayClick = () => {
     history.push('/play');
@@ -60,7 +85,16 @@ const LoggedIn = ({ user, setUser, history }) => {
           <Settings history={history} user={user} setUser={setUser} />
         </Route>
         <Route path="/">
-          <div style={{ margin: 40 }}>Score: {user ? user.score : null}</div>
+          <div style={{ display: 'flex', margin: 40, alignItems: 'center' }}>
+            Score: {user ? user.score : null}
+            <RefreshButton
+              disabled={loading}
+              onClick={handleRefreshClick}
+              type="button"
+            >
+              {'\u21BB'}
+            </RefreshButton>
+          </div>
           <Button onClick={handlePlayClick} type="button">
             play
           </Button>

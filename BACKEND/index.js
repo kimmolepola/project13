@@ -51,7 +51,6 @@ module.exports = { getMain };
 
 io.use((socket, next) => {
   const { token } = socket.handshake.auth;
-  console.log(token);
   let err = null;
   if (token) {
     const decodedToken = JWT.verify(token, JWTSecret);
@@ -66,14 +65,12 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   const { token } = socket.handshake.auth;
-  console.log('connection, auth:', token);
   const decodedId = token
     ? JWT.verify(socket.handshake.auth.token, JWTSecret).id
     : null;
-  const id = decodedId || Math.random().toString();
+  const id = decodedId || `guest${Math.random()}`;
   console.log('connected:', id);
   clients[id] = socket;
-  console.log(Object.keys(clients));
 
   socket.emit('init', id);
 

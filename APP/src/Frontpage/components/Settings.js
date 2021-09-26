@@ -70,23 +70,28 @@ const stateText = (state) => {
 
 const Settings = ({ history, user, setUser }) => {
   const [validation, setValidation] = useState({
+    dirty: false,
     state: 'open',
     update: null,
     username: null,
   });
   const [username, setUsername] = useState('');
 
-  useEffect(() => {
-    setValidation((x) => ({
-      state: x.state,
-      update: null,
-      username: null,
-    }));
-  }, [username]);
+  const resetValidation = () => {
+    if (validation.dirty) {
+      setValidation({
+        dirty: false,
+        state: 'open',
+        update: null,
+        username: null,
+      });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newValidation = {
+      dirty: true,
       state: 'open',
       update: null,
       username: (() => {
@@ -113,6 +118,11 @@ const Settings = ({ history, user, setUser }) => {
     history.push('/');
   };
 
+  const handleUsernameInput = (e) => {
+    resetValidation();
+    setUsername(e.target.value);
+  };
+
   return (
     <Container show={user}>
       <Subtitle>{stateText(validation.state)}</Subtitle>
@@ -129,7 +139,7 @@ const Settings = ({ history, user, setUser }) => {
         <Input
           placeholder="new username"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={handleUsernameInput}
         />
         <Button type="submit">submit</Button>
       </Form>

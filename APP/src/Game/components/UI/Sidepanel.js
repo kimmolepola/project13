@@ -65,6 +65,7 @@ const Container = styled.div`
 
 const Sidepanel = () => {
   const {
+    refreshUser,
     quit,
     history,
     score,
@@ -78,6 +79,7 @@ const Sidepanel = () => {
   const handleQuit = () => {
     quit();
     history.push('/');
+    setTimeout(refreshUser, 2500);
   };
 
   return (

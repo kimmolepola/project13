@@ -99,8 +99,6 @@ const requestPasswordReset = async (username) => {
     createdAt: Date.now(),
   }).save();
 
-  console.log('new, id:', user._id, 'token:', hash);
-
   // const link = `https://${clientURL}/passwordreset?token=${resetToken}&id=${user._id}`;
   const link = `${client}/resetpassword?token=${resetToken}&id=${user._id}`;
 
@@ -121,9 +119,6 @@ const requestPasswordReset = async (username) => {
 };
 
 const resetPassword = async (userId, token, password) => {
-  console.log(token);
-  console.log(await bcrypt.hash(token, Number(bcryptSalt)));
-
   const passwordResetToken = await Token.findOne({ userId });
 
   if (!passwordResetToken) {

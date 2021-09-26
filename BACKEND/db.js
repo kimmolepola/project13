@@ -4,7 +4,7 @@ const { DB_URL } = process.env;
 
 module.exports = async function connection() {
   try {
-    console.log('connecting to', DB_URL);
+    console.log('connecting to database');
     await mongoose.connect(
       DB_URL,
       {

@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import iceServers from './iceServers';
 import { receiveData } from './services/game.service';
 import setupRelayConnection from './relay';
-import { saveGameState } from './services/user.service';
+import { saveGameState, getGameObject } from './services/gameObject.service';
 
 const connect = ({
   objects,
@@ -30,32 +30,46 @@ const connect = ({
     setIds((x) => x.filter((xx) => xx !== delId));
   };
 
-  const mainHandleNewId = (newId) => {
+  const mainHandleNewId = async (newId) => {
     if (main && main === ownId) {
       if (!objectIds.current.includes(newId)) {
-        objectIds.current.push(newId);
-        const obsCur = objects.current;
         // here fetch object info from database and create object
-        obsCur[newId] = {
-          score: 0,
-          startPosition: [0, 0, 1],
-          startQuaternion: [0, 0, 0, 1],
-          controls: { left: 0, right: 0 },
-          controlsOverChannels: { left: 0, right: 0 },
-          controlsOverRelay: { left: 0, right: 0 },
-          speed: 0.3,
-          rotationSpeed: 1,
-          backendPosition: { x: 0, y: 0, z: 1 },
-          backendQuaternion: [0, 0, 0, 1],
-          keyDowns: [],
-        };
-      }
-      setIds((x) => {
-        if (!x.includes(newId)) {
-          return [...x, newId];
+        let obj = { score: 0 };
+        let err = null;
+        if (!newId.includes('guest')) {
+          const { data, error } = await getGameObject(newId);
+          obj = data;
+          err = error;
         }
-        return x;
-      });
+        if (!err && typeof obj.score === 'number') {
+          objectIds.current.push(newId);
+          const obsCur = objects.current;
+          obsCur[newId] = {
+            score: obj.score,
+            startPosition: [0, 0, 1],
+            startQuaternion: [0, 0, 0, 1],
+            controls: { left: 0, right: 0 },
+            controlsOverChannels: { left: 0, right: 0 },
+            controlsOverRelay: { left: 0, right: 0 },
+            speed: 0.3,
+            rotationSpeed: 1,
+            backendPosition: { x: 0, y: 0, z: 1 },
+            backendQuaternion: [0, 0, 0, 1],
+            keyDowns: [],
+          };
+          setIds((x) => {
+            if (!x.includes(newId)) {
+              return [...x, newId];
+            }
+            return x;
+          });
+        } else {
+          const errorText = `Failed to create game object ${newId}. Error: ${
+            err || 'Game object property "score" is not a number'
+          }.`;
+          console.error(errorText);
+        }
+      }
     }
   };
 
@@ -67,9 +81,7 @@ const connect = ({
   setSignaler(socket);
 
   socket.on('connect_error', (err) => {
-    console.log(err instanceof Error); // true
-    console.log(err.message); // not authorized
-    console.log(err.data); // { content: "Please retry later" }
+    console.error(err);
   });
 
   socket.on('connect', () => {

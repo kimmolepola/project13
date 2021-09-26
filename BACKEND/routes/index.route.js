@@ -1,7 +1,10 @@
 const router = require('express').Router();
 const {
-  getUserController,
+  getGameObjectController,
   saveGameStateController,
+} = require('../controllers/gameObject.controller');
+const {
+  getUserController,
   updateUsernameController,
 } = require('../controllers/user.controller');
 const {
@@ -11,8 +14,9 @@ const {
   resetPasswordController,
 } = require('../controllers/auth.controller');
 
+router.get('/gameObject/:id', getGameObjectController);
+router.post('/gameObject/saveGameState', saveGameStateController);
 router.get('/user', getUserController);
-router.post('/user/saveGameState', saveGameStateController);
 router.post('/user/updateUsername', updateUsernameController);
 router.post('/auth/login', loginController);
 router.post('/auth/signup', signUpController);

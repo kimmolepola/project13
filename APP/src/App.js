@@ -14,22 +14,21 @@ const Container = () => {
   const history = useHistory();
   const [user, setUser] = useState();
 
-  useEffect(async () => {
+  const refreshUser = async () => {
     const item = window.localStorage.getItem('loggedProject13User');
-    if (
-      item !== 'undefined' &&
-      item !== undefined &&
-      item !== null &&
-      item !== 'null'
-    ) {
+    if (item && item !== 'null' && item !== 'undefined') {
       setToken(JSON.parse(item).token);
       const { data, error } = await getUser();
       setUser(data);
     }
+    return true;
+  };
+
+  useEffect(async () => {
+    refreshUser();
   }, []);
 
   useEffect(() => {
-    console.log('useeffect, user', user);
     if (user) {
       window.localStorage.setItem('loggedProject13User', JSON.stringify(user));
     } else {
@@ -41,10 +40,20 @@ const Container = () => {
   return (
     <Switch>
       <Route path="/play">
-        <Game history={history} user={user} setUser={setUser} />
+        <Game
+          refreshUser={refreshUser}
+          history={history}
+          user={user}
+          setUser={setUser}
+        />
       </Route>
       <Route path="/">
-        <Frontpage history={history} setUser={setUser} user={user} />
+        <Frontpage
+          refreshUser={refreshUser}
+          history={history}
+          setUser={setUser}
+          user={user}
+        />
       </Route>
     </Switch>
   );

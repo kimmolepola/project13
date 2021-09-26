@@ -40,6 +40,7 @@ const Container = styled.div`
 
 const CreateAccount = ({ user, history, setUser }) => {
   const [validation, setValidation] = useState({
+    dirty: false,
     state: 'open',
     create: null,
     email: null,
@@ -50,6 +51,19 @@ const CreateAccount = ({ user, history, setUser }) => {
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
 
+  const resetValidation = () => {
+    if (validation.dirty) {
+      setValidation({
+        dirty: false,
+        state: 'open',
+        create: null,
+        email: null,
+        password: null,
+        repeatPassword: null,
+      });
+    }
+  };
+
   useEffect(() => {
     const doit = () => {
       if (user) {
@@ -59,19 +73,10 @@ const CreateAccount = ({ user, history, setUser }) => {
     doit();
   }, [user]);
 
-  useEffect(() => {
-    setValidation({
-      state: 'open',
-      create: null,
-      email: null,
-      password: null,
-      repeatPassword: null,
-    });
-  }, [email, password, repeatPassword]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newValidation = {
+      dirty: true,
       state: 'open',
       create: null,
       email: email.match(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/)
@@ -94,18 +99,23 @@ const CreateAccount = ({ user, history, setUser }) => {
         setUser(data);
       }
     }
+    setPassword('');
+    setRepeatPassword('');
     setValidation({ ...newValidation });
   };
 
   const handleEmailInput = (e) => {
+    resetValidation();
     setEmail(e.target.value);
   };
 
   const handlePasswordInput = (e) => {
+    resetValidation();
     setPassword(e.target.value);
   };
 
   const handleRepeatPasswordInput = (e) => {
+    resetValidation();
     setRepeatPassword(e.target.value);
   };
 

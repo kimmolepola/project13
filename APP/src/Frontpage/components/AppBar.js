@@ -51,16 +51,23 @@ const Text = styled.div`
   text-align: center;
 `;
 
-const Container = styled.div`
-  display: ${(props) => (props.show ? 'flex' : 'none')};
+const Container2 = styled.div`
+  display: flex;
   justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  max-width: 1000px;
+`;
+
+const Container = styled.div`
+  display: flex;
   background: ${theme.colors.elementBackgrounds.verylight};
   position: absolute;
   top: 0px;
   right: 0px;
   left: 0px;
   height: ${theme.appbarHeight};
-  align-items: center;
+  justify-content: center;
 `;
 
 const AppBar = ({ history, setUser, user }) => {
@@ -78,22 +85,24 @@ const AppBar = ({ history, setUser, user }) => {
 
   return (
     <Container show={user}>
-      <Title show={!user} onClick={handleTitleClick}>
-        Project13
-      </Title>
+      <Container2>
+        <Title show={!user} onClick={handleTitleClick}>
+          Project13
+        </Title>
 
-      <Text>Hi, {user ? user.username : null}</Text>
-      <ButtonsContainer>
-        <Settings onClick={handleSettingsClick}>{'\u2699'}</Settings>
-        <Button
-          color={theme.colors.elementHighlights.button1}
-          background="transparent"
-          onClick={handleLogoutClick}
-          type="button"
-        >
-          logout
-        </Button>
-      </ButtonsContainer>
+        <Text>Hi, {user ? user.username : null}</Text>
+        <ButtonsContainer>
+          <Settings onClick={handleSettingsClick}>{'\u2699'}</Settings>
+          <Button
+            color={theme.colors.elementHighlights.button1}
+            background="transparent"
+            onClick={handleLogoutClick}
+            type="button"
+          >
+            logout
+          </Button>
+        </ButtonsContainer>
+      </Container2>
     </Container>
   );
 };
