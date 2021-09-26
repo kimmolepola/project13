@@ -68,15 +68,17 @@ const Game = ({ history, user }) => {
   const text = useRef();
   const score = useRef({ value: 0, textContent: 0 });
 
-  const saveState = () => {
+  const saveState = async () => {
     if (main && main === id) {
-      saveGameState(
+      const { error, data } = await saveGameState(
         objectIds.current.map((x) => ({
-          playerId: objects.current[x].id,
+          playerId: x,
           score: objects.current[x].score,
         })),
       );
+      console.log(error, data);
     }
+    return true;
   };
 
   const disconnect = () => {
@@ -88,6 +90,13 @@ const Game = ({ history, user }) => {
     setRelay(undefined);
     if (signaler) signaler.disconnect();
     setSignaler(undefined);
+  };
+
+  const quit = async () => {
+    if (main && main === id) {
+      await saveState();
+    }
+    disconnect();
   };
 
   const resizeHandler = () => {
@@ -132,8 +141,7 @@ const Game = ({ history, user }) => {
       setRemotes,
     });
     return () => {
-      saveState();
-      disconnect();
+      quit();
     };
   }, []);
 
@@ -153,9 +161,8 @@ const Game = ({ history, user }) => {
       />
       <AppContext.Provider
         value={{
-          saveState,
+          quit,
           history,
-          disconnect,
           score,
           windowHeight,
           objects,

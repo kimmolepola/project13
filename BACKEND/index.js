@@ -16,6 +16,7 @@ const io = require('socket.io')(server, {
 });
 
 const connection = require('./db');
+const { setMain, getMain } = require('./main');
 
 const port = process.env.PORT;
 
@@ -44,10 +45,9 @@ server.listen(port, () => {
 const JWTSecret = process.env.JWT_SECRET;
 
 const clients = {};
-let main = null;
 
 // eslint-disable-next-line import/prefer-default-export
-module.exports = { getMain: () => main };
+module.exports = { getMain };
 
 io.use((socket, next) => {
   const { token } = socket.handshake.auth;
@@ -77,12 +77,12 @@ io.on('connection', (socket) => {
 
   socket.emit('init', id);
 
-  if (!main) {
-    main = id;
-    console.log('main:', main);
-    socket.emit('main', main);
+  if (!getMain()) {
+    setMain(id);
+    console.log('main:', getMain());
+    socket.emit('main', getMain());
   } else {
-    socket.emit('connectToMain', main);
+    socket.emit('connectToMain', getMain());
   }
 
   const signaling = ({ remoteId, description, candidate }) => {
@@ -99,15 +99,15 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('peerDisconnect', id);
     console.log('disconnect,', id);
     delete clients[id];
-    if (main && main === id) {
-      main = null;
+    if (getMain() && getMain() === id) {
+      setMain(null);
       Object.keys(clients).forEach((x) => {
-        if (main === null) {
-          main = x;
-          console.log('main:', main);
-          clients[x].emit('main', main);
+        if (getMain() === null) {
+          setMain(x);
+          console.log('main:', getMain());
+          clients[x].emit('main', getMain());
         } else {
-          clients[x].emit('connectToMain', main);
+          clients[x].emit('connectToMain', getMain());
         }
       });
     }

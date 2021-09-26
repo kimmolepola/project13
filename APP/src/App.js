@@ -8,15 +8,33 @@ import {
 import Game from './Game/Game';
 import Frontpage from './Frontpage/Frontpage';
 import { setToken } from './networking/services/auth.service';
+import { getUser } from './networking/services/user.service';
 
 const Container = () => {
   const history = useHistory();
-  const [user, setUser] = useState(
-    JSON.parse(window.localStorage.getItem('loggedProject13User')),
-  );
+  const [user, setUser] = useState();
+
+  useEffect(async () => {
+    const item = window.localStorage.getItem('loggedProject13User');
+    if (
+      item !== 'undefined' &&
+      item !== undefined &&
+      item !== null &&
+      item !== 'null'
+    ) {
+      setToken(JSON.parse(item).token);
+      const { data, error } = await getUser();
+      setUser(data);
+    }
+  }, []);
 
   useEffect(() => {
-    window.localStorage.setItem('loggedProject13User', JSON.stringify(user));
+    console.log('useeffect, user', user);
+    if (user) {
+      window.localStorage.setItem('loggedProject13User', JSON.stringify(user));
+    } else {
+      window.localStorage.removeItem('loggedProject13User');
+    }
     setToken(user ? user.token : null);
   }, [user]);
 
