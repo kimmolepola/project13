@@ -2,7 +2,10 @@ require('dotenv').config();
 
 const options = {
   cors: {
-    origin: process.env.CORS_ORIGIN,
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? `https://${process.env.CLIENT}`
+        : `http://${process.env.CLIENT}`,
     methods: ['GET', 'POST'],
   },
 };

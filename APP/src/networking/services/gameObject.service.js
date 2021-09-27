@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const server = process.env.REACT_APP_LOGIN_SERVER;
+const server =
+  process.env.NODE_ENV === 'production'
+    ? `https://${process.env.REACT_APP_BACKEND}`
+    : `http://${process.env.REACT_APP_BACKEND}`;
 
 // eslint-disable-next-line import/prefer-default-export
 export const getGameObject = async (id) => {

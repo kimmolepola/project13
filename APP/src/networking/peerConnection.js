@@ -73,11 +73,16 @@ const connect = ({
     }
   };
 
-  const socket = io(process.env.REACT_APP_SIGNALING_SERVER, {
-    auth: {
-      token: user ? user.token : null,
+  const socket = io(
+    process.env.NODE_ENV === 'production'
+      ? `wss://${process.env.REACT_APP_BACKEND}`
+      : `ws://${process.env.REACT_APP_BACKEND}`,
+    {
+      auth: {
+        token: user ? user.token : null,
+      },
     },
-  });
+  );
   setSignaler(socket);
 
   socket.on('connect_error', (err) => {

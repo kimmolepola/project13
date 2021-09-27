@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test",
-    "devstart": "nodemon start"
+    "start": "cross-env NODE_ENV=production node start",
+    "devstart": "cross-env NODE_ENV=development nodemon start"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^5.0.0",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",

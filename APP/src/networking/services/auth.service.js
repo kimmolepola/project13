@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-const server = process.env.REACT_APP_LOGIN_SERVER;
-// const serverUri = '192.168.132.87:8060';
+const server =
+  process.env.NODE_ENV === 'production'
+    ? `https://${process.env.REACT_APP_BACKEND}`
+    : `http://${process.env.REACT_APP_BACKEND}`;
 
 export const setToken = (token) => {
   axios.defaults.headers.common = { Authorization: `Bearer ${token}` };

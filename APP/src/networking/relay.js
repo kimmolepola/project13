@@ -21,7 +21,11 @@ const setupRelayConnection = ({
     return x;
   });
   if (!relaySocket) {
-    relaySocket = io(process.env.REACT_APP_RELAY_SERVER);
+    relaySocket = io(
+      process.env.NODE_ENV === 'production'
+        ? `wss://${process.env.REACT_APP_RELAY}`
+        : `ws://${process.env.REACT_APP_RELAY}`,
+    );
     relaySocket.on('newPeer', () => {
       // to trigger network message of current objects which the new peer will need
       setIds((xx) => [...xx]);

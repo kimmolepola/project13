@@ -7,7 +7,10 @@ const sendEmail = require('../utils/email/sendEmail');
 
 const JWTSecret = process.env.JWT_SECRET;
 const bcryptSalt = process.env.BCRYPT_SALT;
-const client = process.env.CLIENT;
+const client =
+  process.env.NODE_ENV === 'production'
+    ? `https://${process.env.CLIENT}`
+    : `http://${process.env.CLIENT}`;
 
 /* eslint-disable no-underscore-dangle, no-return-assign, no-param-reassign */
 const login = async (data) => {
