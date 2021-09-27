@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test",
-    "start": "cross-env NODE_ENV=production node start",
-    "devstart": "cross-env NODE_ENV=development nodemon start"
+    "start": "cross-env NODE_ENV=production node inex.js",
+    "devstart": "cross-env NODE_ENV=development nodemon index.js"
   },
   "author": "",
   "license": "MIT",
