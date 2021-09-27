@@ -8,12 +8,16 @@ const http = require('http');
 const app = express();
 const server = http.createServer(app);
 
+const client =
+  process.env.NODE_ENV === 'production'
+    ? `https://${process.env.CLIENT}`
+    : `http://${process.env.CLIENT}`;
+
+console.log('client:', client);
+
 const io = require('socket.io')(server, {
   cors: {
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? `https://${process.env.CLIENT}`
-        : `http://${process.env.CLIENT}`,
+    origin: client,
     methods: ['GET', 'POST'],
   },
 });
