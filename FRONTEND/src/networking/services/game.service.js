@@ -5,7 +5,7 @@ export const sendDataOnRelay = (data, relay) => {
     try {
       relay.emit('data', data);
     } catch (error) {
-      console.error(error);
+      console.log('Error:', error.message, 'Data:', data);
     }
   }
 };
@@ -13,11 +13,13 @@ export const sendDataOnRelay = (data, relay) => {
 export const sendDataOnUnorderedChannels = (data, channels) => {
   if (channels.unordered.length) {
     const stringData = JSON.stringify(data);
-    try {
-      channels.unordered.forEach((x) => x.send(stringData));
-    } catch (error) {
-      console.error(error);
-    }
+    channels.unordered.forEach((x) => {
+      try {
+        x.send(stringData);
+      } catch (error) {
+        console.log('Error:', error.message, 'Data:', stringData);
+      }
+    });
   }
 };
 
@@ -46,16 +48,19 @@ export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
   }
   if (channels.ordered.length) {
     const dataString = JSON.stringify(data);
-    try {
-      channels.ordered.forEach((x) => x.send(dataString));
-    } catch (error) {
-      console.error(error);
-    }
+
+    channels.ordered.forEach((x) => {
+      try {
+        x.send(dataString);
+      } catch (error) {
+        console.log('Error:', error.message, 'Data:', dataString);
+      }
+    });
   }
   try {
     if (relay) relay.emit('data', data);
   } catch (error) {
-    console.error(error);
+    console.log('Error:', error.message, 'Data:', data);
   }
 };
 
@@ -103,11 +108,10 @@ export const receiveData = (
         /* eslint-enable */
       }
       break;
-    case 'setObjects': {
+    case 'updateObjects': {
       // only non-main will receive these
       objectIds.current.splice(0, objectIds.current.length);
       objectIds.current.push(...data.ids);
-      setIds(data.ids);
       const objs = objects.current;
       data.ids.forEach((x) => {
         const obj = objs[x];
@@ -119,6 +123,7 @@ export const receiveData = (
           objs[x] = dataObj;
         }
       });
+      setIds(data.ids);
       break;
     }
     case 'chatMessage': {

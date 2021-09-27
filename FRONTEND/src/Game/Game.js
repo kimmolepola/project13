@@ -39,7 +39,7 @@ const mainUpdatePeers = (
         };
       }
     });
-    const arg = { type: 'setObjects', ids: idsNew, objects: objectsNew };
+    const arg = { type: 'updateObjects', ids: idsNew, objects: objectsNew };
     sendDataOnOrderedChannelsAndRelay(arg, channels, relay);
   }
 };
