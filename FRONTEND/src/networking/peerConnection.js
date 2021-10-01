@@ -234,6 +234,12 @@ const connect = ({
     return newRemotes;
   };
 
+  socket.on('nomain', () => {
+    setConnectionMessage(
+      'game host disconnected, no other available hosts found, please try again later',
+    );
+  });
+
   socket.on('peerDisconnect', (remoteId) => {
     setConnectionMessage(`peer ${remoteId} disconnect`);
     console.log('peer', remoteId, 'disconnect');
@@ -282,6 +288,10 @@ const connect = ({
     if (relay) relay.emit('main', true);
     mainHandleNewId(main);
     console.log('you are main');
+  });
+
+  socket.on('fail', (reason) => {
+    console.log('signaling socket fail, reason:', reason);
   });
 
   socket.on('init', (clientId) => {

@@ -24,6 +24,10 @@ const basicButton = `
   box-shadow: ${shadow};
   border: ${border};
   border-radius: ${borderRadius};
+  :active {
+    color: ${colors.elementBackgrounds.verylight};
+    background: black;
+  }
   :focus {
     border-color: ${colors.elementBackgrounds.strong};
     outline: none;

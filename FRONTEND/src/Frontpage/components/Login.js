@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import theme from '../../theme';
-import { login } from '../../networking/services/auth.service';
+import { guestLogin, login } from '../../networking/services/auth.service';
 
 const ErrorMessage = styled.div`
   max-width: 5cm;
@@ -115,8 +115,12 @@ const Login = ({ user, setUser, history }) => {
     history.push('/createaccount');
   };
 
-  const handleGuestClick = () => {
-    history.push('/play');
+  const handleGuestClick = async () => {
+    const { data, error } = await guestLogin();
+    console.log('guest login:', data, error);
+    if (!error) {
+      setUser(data);
+    }
   };
 
   return (

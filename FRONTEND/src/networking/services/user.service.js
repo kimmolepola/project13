@@ -5,6 +5,16 @@ const server =
     ? `https://${process.env.REACT_APP_BACKEND}`
     : `http://${process.env.REACT_APP_BACKEND}`;
 
+export const checkOkToStart = async () => {
+  try {
+    const response = await axios.get(` ${server}/api/v1/user/checkOkToStart`);
+    return { data: response.data, error: null };
+  } catch (err) {
+    const error = err.response ? err.response.data.error : err.toString();
+    return { data: null, error };
+  }
+};
+
 export const getUser = async () => {
   try {
     const response = await axios.get(`${server}/api/v1/user`);

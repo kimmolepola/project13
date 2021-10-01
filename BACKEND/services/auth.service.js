@@ -13,7 +13,21 @@ const client =
     : `http://${process.env.CLIENT}`;
 
 /* eslint-disable no-underscore-dangle, no-return-assign, no-param-reassign */
+const guestLogin = async () => {
+  console.log('guest login');
+  const id = `guest_${Math.random().toString()}`;
+  const token = JWT.sign({ id }, JWTSecret);
+
+  return {
+    score: 0,
+    userId: id,
+    username: id,
+    token,
+  };
+};
+
 const login = async (data) => {
+  console.log('login', data.username);
   let user;
   if (data.username.includes('@')) {
     user = await User.findOne({ email: data.username });
@@ -34,13 +48,13 @@ const login = async (data) => {
   return (data = {
     score: user.score,
     userId: user._id,
-    email: user.email,
     username: user.username,
     token,
   });
 };
 
 const signup = async (data) => {
+  console.log('signup', data.email);
   let user = await User.findOne({ email: data.email });
   if (user) {
     const err = new Error('Email already exist');
@@ -70,14 +84,13 @@ const signup = async (data) => {
   return (data = {
     score: user.score,
     userId: user._id,
-    email: user.email,
     username: user.username,
     token,
   });
 };
 
 const requestPasswordReset = async (username) => {
-  // const user = await User.findOne({ email });
+  console.log('request password reset', username);
   let user;
   if (username.includes('@')) {
     user = await User.findOne({ email: username });
@@ -122,6 +135,7 @@ const requestPasswordReset = async (username) => {
 };
 
 const resetPassword = async (userId, token, password) => {
+  console.log('reset password, user id:', userId);
   const passwordResetToken = await Token.findOne({ userId });
 
   if (!passwordResetToken) {
@@ -166,6 +180,7 @@ const resetPassword = async (userId, token, password) => {
 };
 
 module.exports = {
+  guestLogin,
   login,
   signup,
   requestPasswordReset,

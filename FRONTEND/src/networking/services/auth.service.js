@@ -9,6 +9,16 @@ export const setToken = (token) => {
   axios.defaults.headers.common = { Authorization: `Bearer ${token}` };
 };
 
+export const guestLogin = async () => {
+  try {
+    const response = await axios.post(`${server}/api/v1/auth/guestLogin`);
+    return { data: response.data, error: null };
+  } catch (err) {
+    const error = err.response ? err.response.data.error : err.toString();
+    return { data: null, error };
+  }
+};
+
 export const resetPassword = async ({ token, userId, password }) => {
   try {
     const response = await axios.post(`${server}/api/v1/auth/resetpassword`, {

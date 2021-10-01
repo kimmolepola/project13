@@ -69,7 +69,7 @@ export default function Chat() {
             }}
           >
             <Text>
-              {x.userId}: {x.chatMessage}
+              {x.username}: {x.chatMessage}
             </Text>
             <Avatar src="avatar.jpg" alt="Avatar" />
           </Message>

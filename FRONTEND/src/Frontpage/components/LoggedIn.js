@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useHistory, Switch, Route } from 'react-router-dom';
-import { updateUsername } from '../../networking/services/user.service';
+import { Switch, Route } from 'react-router-dom';
+import { checkOkToStart } from '../../networking/services/user.service';
 import theme from '../../theme';
 import Settings from './Settings';
 
-const Input = styled.input`
-  ${theme.basicInput}
-  height: 30px;
-  margin: ${theme.margins.basic};
-  ${(props) => props.error && 'border-color: red;'}
+const Score = styled.div`
+  display: ${(props) => (props.show ? 'flex' : 'none')};
+  margin: 40;
+  align-items: center;
+`;
+
+const ErrorMessage = styled.div`
+  max-width: 5cm;
+  display: ${(props) => (props.error ? '' : 'none')};
+  margin: ${theme.margins.large};
+  font-size: 12px;
+  color: red;
 `;
 
 const RefreshButton = styled.button`
@@ -50,32 +57,30 @@ const Container = styled.div`
 `;
 
 const LoggedIn = ({ refreshUser, user, setUser, history }) => {
-  const [validation, setValidation] = useState({
-    state: 'open',
-    update: null,
-    username: null,
-  });
-  const [username, setUsername] = useState('');
   const [errorText, setErrorText] = useState();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setValidation({
-      state: 'open',
-      update: null,
-      username: null,
-    });
-  }, [username]);
+    setErrorText(null);
+  }, [user]);
 
   const handleRefreshClick = async () => {
     setLoading(true);
     await refreshUser();
     setLoading(false);
-    console.log('refreshed');
+    console.log('refresh');
   };
 
-  const handlePlayClick = () => {
-    history.push('/play');
+  const handlePlayClick = async () => {
+    if (!errorText) {
+      const { data, error } = await checkOkToStart();
+      if (data && data.success) {
+        history.push('/play');
+      } else {
+        setErrorText(error || data.reason);
+        setTimeout(() => setErrorText(null), 5000);
+      }
+    }
   };
 
   return (
@@ -85,7 +90,7 @@ const LoggedIn = ({ refreshUser, user, setUser, history }) => {
           <Settings history={history} user={user} setUser={setUser} />
         </Route>
         <Route path="/">
-          <div style={{ display: 'flex', margin: 40, alignItems: 'center' }}>
+          <Score show={user && !user.username.includes('guest_')}>
             Score: {user ? user.score : null}
             <RefreshButton
               disabled={loading}
@@ -94,7 +99,8 @@ const LoggedIn = ({ refreshUser, user, setUser, history }) => {
             >
               {'\u21BB'}
             </RefreshButton>
-          </div>
+          </Score>
+          <ErrorMessage error={errorText}>{errorText}</ErrorMessage>
           <Button onClick={handlePlayClick} type="button">
             play
           </Button>

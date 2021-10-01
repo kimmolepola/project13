@@ -1,9 +1,15 @@
 const {
+  guestLogin,
   login,
   signup,
   requestPasswordReset,
   resetPassword,
 } = require('../services/auth.service');
+
+const guestLoginController = async (req, res, next) => {
+  const loginService = await guestLogin();
+  return res.json(loginService);
+};
 
 const loginController = async (req, res, next) => {
   const loginService = await login(req.body);
@@ -32,6 +38,7 @@ const resetPasswordController = async (req, res, next) => {
 };
 
 module.exports = {
+  guestLoginController,
   loginController,
   signUpController,
   resetPasswordRequestController,

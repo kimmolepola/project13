@@ -10,6 +10,7 @@ const ButtonsContainer = styled.div`
 `;
 
 const Settings = styled.button`
+  display: ${(props) => (props.show ? '' : 'none')};
   cursor: pointer;
   background: none;
   border: none;
@@ -92,7 +93,12 @@ const AppBar = ({ history, setUser, user }) => {
 
         <Text>Hi, {user ? user.username : null}</Text>
         <ButtonsContainer>
-          <Settings onClick={handleSettingsClick}>{'\u2699'}</Settings>
+          <Settings
+            show={user && !user.username.includes('guest_')}
+            onClick={handleSettingsClick}
+          >
+            {'\u2699'}
+          </Settings>
           <Button
             color={theme.colors.elementHighlights.button1}
             background="transparent"

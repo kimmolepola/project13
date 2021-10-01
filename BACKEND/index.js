@@ -23,7 +23,13 @@ const io = require('socket.io')(server, {
 });
 
 const connection = require('./db');
-const { setMain, getMain } = require('./main');
+const {
+  addClientUnique,
+  removeClient,
+  getClients,
+  setMain,
+  getMain,
+} = require('./clients');
 
 const port = process.env.PORT;
 
@@ -51,11 +57,6 @@ server.listen(port, () => {
 
 const JWTSecret = process.env.JWT_SECRET;
 
-const clients = {};
-
-// eslint-disable-next-line import/prefer-default-export
-module.exports = { getMain };
-
 io.use((socket, next) => {
   const { token } = socket.handshake.auth;
   let err = null;
@@ -72,53 +73,65 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   const { token } = socket.handshake.auth;
-  const decodedId = token
+  console.log('token:', token);
+  const id = token
     ? JWT.verify(socket.handshake.auth.token, JWTSecret).id
     : null;
-  const id = decodedId || `guest${Math.random()}`;
-  console.log('connected:', id);
-  clients[id] = socket;
-
-  socket.emit('init', id);
-
-  if (!getMain()) {
-    setMain(id);
-    console.log('main:', getMain());
-    socket.emit('main', getMain());
+  const unique = addClientUnique(id, socket);
+  if (!id || !unique) {
+    socket.emit('fail', id ? 'duplicateSessionError' : 'tokenError');
+    socket.disconnect();
+    console.log(
+      id
+        ? 'duplicate session, socket disconnect'
+        : 'token error, socket disconnect',
+    );
   } else {
-    socket.emit('connectToMain', getMain());
-  }
+    console.log('connected:', id);
+    socket.emit('init', id);
 
-  const signaling = ({ remoteId, description, candidate }) => {
-    if (clients[remoteId]) {
-      clients[remoteId].emit('signaling', {
-        id,
-        description,
-        candidate,
-      });
+    if (!getMain()) {
+      setMain(id);
+      console.log('main:', getMain());
+      socket.emit('main', getMain());
+    } else {
+      socket.emit('connectToMain', getMain());
     }
-  };
 
-  const disconnect = () => {
-    socket.broadcast.emit('peerDisconnect', id);
-    console.log('disconnect,', id);
-    delete clients[id];
-    if (getMain() && getMain() === id) {
-      setMain(null);
-      Object.keys(clients).forEach((x) => {
-        if (getMain() === null) {
-          setMain(x);
-          console.log('main:', getMain());
-          clients[x].emit('main', getMain());
-        } else {
-          clients[x].emit('connectToMain', getMain());
+    const signaling = ({ remoteId, description, candidate }) => {
+      if (getClients()[remoteId]) {
+        getClients()[remoteId].emit('signaling', {
+          id,
+          description,
+          candidate,
+        });
+      }
+    };
+
+    const disconnect = () => {
+      socket.broadcast.emit('peerDisconnect', id);
+      console.log('disconnect,', id);
+      removeClient(id);
+      if (getMain() && getMain() === id) {
+        setMain(null);
+        Object.keys(getClients()).forEach((x) => {
+          if (!x.includes('guest_') && getMain() === null) {
+            setMain(x);
+            console.log('main:', getMain());
+            getClients()[x].emit('main', getMain());
+          } else {
+            getClients()[x].emit('connectToMain', getMain());
+          }
+        });
+        if (!getMain()) {
+          socket.broadcast.emit('nomain');
         }
-      });
-    }
-  };
+      }
+    };
 
-  socket.on('signaling', signaling);
-  socket.on('disconnect', disconnect);
+    socket.on('signaling', signaling);
+    socket.on('disconnect', disconnect);
+  }
 });
 
 module.exports = app;
