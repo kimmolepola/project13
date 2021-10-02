@@ -26,6 +26,10 @@ const RefreshButton = styled.button`
   margin: ${theme.margins.large};
   color: ${theme.colors.elementHighlights.button1};
   background-color: ${(props) => props.background || 'transparent'};
+  :active {
+    background: ${(props) => props.background || 'transparent'};
+    color: ${theme.colors.elementHighlights.button1};
+  }
   :disabled {
     background-color: transparent;
     cursor: default;

@@ -2,6 +2,7 @@ import { io } from 'socket.io-client';
 import { receiveData } from './services/game.service';
 
 const setupRelayConnection = ({
+  mainHandleNewId,
   setRelay,
   setIds,
   ownId,
@@ -34,6 +35,7 @@ const setupRelayConnection = ({
       relaySocket.emit('clientId', ownId);
       if (main === ownId) {
         relaySocket.emit('main');
+        mainHandleNewId(remoteId);
       }
       setConnectionMessage('relay socket connected');
       console.log('relay socket connected');
@@ -56,8 +58,10 @@ const setupRelayConnection = ({
         setMain,
       ),
     );
+    setRelay(relaySocket);
+  } else {
+    mainHandleNewId(remoteId);
   }
-  setRelay(relaySocket);
   setRemotes((x) => ({
     ...x,
     [remoteId]: { ...x[remoteId], relaySocket: true },

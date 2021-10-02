@@ -22,21 +22,13 @@ const connect = ({
   let ownId;
   let main;
 
-  const handleDeleteId = (delId) => {
-    const objs = objects.current;
-    delete objs[delId];
-    const index = objectIds.current.indexOf(delId);
-    if (index !== -1) objectIds.current.splice(index, 1);
-    setIds((x) => x.filter((xx) => xx !== delId));
-  };
-
   const mainHandleNewId = async (newId) => {
     if (main && main === ownId) {
       if (!objectIds.current.includes(newId)) {
         // here fetch object info from database and create object
         let obj = { score: 0 };
         let err = null;
-        if (!newId.includes('guest')) {
+        if (!newId.includes('guest_')) {
           const { data, error } = await getGameObject(newId);
           obj = data;
           err = error;
@@ -73,6 +65,14 @@ const connect = ({
     }
   };
 
+  const handleDeleteId = (delId) => {
+    const objs = objects.current;
+    delete objs[delId];
+    const index = objectIds.current.indexOf(delId);
+    if (index !== -1) objectIds.current.splice(index, 1);
+    setIds((x) => x.filter((xx) => xx !== delId));
+  };
+
   const socket = io(
     process.env.NODE_ENV === 'production'
       ? `wss://${process.env.REACT_APP_BACKEND}`
@@ -102,6 +102,7 @@ const connect = ({
     setConnectionMessage(`peer ${remoteId}, using relay connection`);
     console.log('peer', remoteId, 'using relay connection');
     setupRelayConnection({
+      mainHandleNewId,
       setRelay,
       setIds,
       ownId,
@@ -118,8 +119,8 @@ const connect = ({
   };
 
   const start = (remoteId) => {
-    setConnectionMessage(`peer ${remoteId}, starting connection`);
-    console.log('peer', remoteId, 'starting connection');
+    setConnectionMessage(`connecting with peer ${remoteId}`);
+    console.log('peer', remoteId, 'connecting');
     const pc = new RTCPeerConnection({ iceServers });
 
     pc.onconnectionstatechange = () => {
@@ -127,7 +128,6 @@ const connect = ({
         setConnectionMessage(`peer ${remoteId}, connection failed`);
         console.log('peer', remoteId, 'peer connection failed');
         handleFailed(remoteId);
-        mainHandleNewId(remoteId);
       } else if (pc.connectionState === 'connected') {
         setConnectionMessage(`peer ${remoteId}, connection ready`);
         console.log('peer', remoteId, 'peer connection ready');

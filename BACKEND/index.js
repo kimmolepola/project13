@@ -87,7 +87,7 @@ io.on('connection', (socket) => {
         : 'token error, socket disconnect',
     );
   } else {
-    console.log('connected:', id);
+    console.log('connected:', id, 'main:', getMain());
     socket.emit('init', id);
 
     if (!getMain()) {
