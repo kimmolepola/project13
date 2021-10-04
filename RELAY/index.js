@@ -10,6 +10,8 @@ const options = {
   },
 };
 
+console.log('options:', options);
+
 const io = require('socket.io')(options);
 
 let main;
