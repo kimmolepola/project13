@@ -5,7 +5,9 @@ import appContext from '../../../context/appContext';
 import { handlePressed, handleReleased } from '../../controls';
 
 const Infotext = styled.div`
-  text-shadow: white 0 0 1px;
+  padding: 5px;
+  background: rgba(255, 255, 255, 0.75);
+  white-space: pre-line;
   position: absolute;
   left: 20px;
   top: 20px;

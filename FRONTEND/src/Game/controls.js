@@ -13,6 +13,10 @@ export const handleReleased = (key, id, objects) => {
 
 const convertKeyToControl = (key) => {
   switch (key) {
+    case 'ArrowUp':
+      return 'up';
+    case 'ArrowDown':
+      return 'down';
     case 'ArrowLeft':
       return 'left';
     case 'ArrowRight':

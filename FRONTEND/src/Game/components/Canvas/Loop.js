@@ -25,12 +25,13 @@ const Loop = ({
   objects,
 }) => {
   /* eslint-disable no-param-reassign */
+  const ownObj = objects.current[id];
   const qua = new Quaternion();
   let nextSendTime = Date.now();
   let nextSendTimeRelay = Date.now();
   let nextScoreTime = Date.now();
 
-  const handleSelf = (ownObj, delta) => {
+  const handleSelf = (delta) => {
     for (let ii = ownObj.keyDowns.length - 1; ii > -1; ii -= 1) {
       switch (ownObj.keyDowns[ii]) {
         case 'left':
@@ -59,12 +60,11 @@ const Loop = ({
   const handleText = (ownRef) => {
     const degree = Math.round(radiansToDegrees(-ownRef.rotation.z));
     const heading = degree < 0 ? degree + 360 : degree;
-    text.current.textContent = `
-      x: ${ownRef.position.x.toFixed(0)}
+    text.current.textContent = `x: ${ownRef.position.x.toFixed(0)}
       y: ${ownRef.position.y.toFixed(0)}
       z: ${ownRef.position.z.toFixed(0)}
       heading: ${heading}
-      `;
+      speed: ${ownObj.speed.toFixed(1)}`;
   };
 
   const handleObjects = (delta) => {
@@ -155,35 +155,35 @@ const Loop = ({
       type: 'controlsOverNetwork',
       controlsOverNetwork: {
         left: viaRelay
-          ? objects.current[id].controlsOverRelay.left
-          : objects.current[id].controlsOverChannels.left,
+          ? ownObj.controlsOverRelay.left
+          : ownObj.controlsOverChannels.left,
         right: viaRelay
-          ? objects.current[id].controlsOverRelay.right
-          : objects.current[id].controlsOverChannels.right,
+          ? ownObj.controlsOverRelay.right
+          : ownObj.controlsOverChannels.right,
       },
     };
     if (viaRelay) {
-      objects.current[id].controlsOverRelay.left = 0; // reset
-      objects.current[id].controlsOverRelay.right = 0; // reset
+      ownObj.controlsOverRelay.left = 0; // reset
+      ownObj.controlsOverRelay.right = 0; // reset
     } else {
-      objects.current[id].controlsOverChannels.left = 0; // reset
-      objects.current[id].controlsOverChannels.right = 0; // reset
+      ownObj.controlsOverChannels.left = 0; // reset
+      ownObj.controlsOverChannels.right = 0; // reset
     }
     return controlsData;
   };
 
   useFrame((state, delta) => {
-    if (objects.current[id]) {
+    if (ownObj) {
       if (Date.now() > nextScoreTime) {
         objectIds.current.forEach((x) => {
           if (objects.current[x]) {
             objects.current[x].score += 1;
           }
         });
-        score.current.textContent = `Score: ${objects.current[id].score}`;
+        score.current.textContent = `Score: ${ownObj.score}`;
         nextScoreTime += 3700;
       }
-      if (Date.now() > nextSendTime && objects.current[id]) {
+      if (Date.now() > nextSendTime && ownObj) {
         nextSendTime =
           Date.now() + (main && main === id ? sendIntervalMain : sendInterval);
         if (main && main === id) {
@@ -192,7 +192,7 @@ const Loop = ({
           sendDataOnUnorderedChannels(getControlsData(false), channels);
         }
       }
-      if (Date.now() > nextSendTimeRelay && objects.current[id]) {
+      if (Date.now() > nextSendTimeRelay && ownObj) {
         nextSendTimeRelay =
           Date.now() +
           (main && main === id ? relaySendIntervalMain : relaySendInterval);
@@ -203,12 +203,10 @@ const Loop = ({
         }
       }
 
-      const ownRef = objects.current[id]
-        ? objects.current[id].elref
-        : undefined;
+      const ownRef = ownObj ? ownObj.elref : undefined;
 
       if (ownRef && ownRef.position) {
-        handleSelf(objects.current[id], delta);
+        handleSelf(delta);
         handleCamera(state, ownRef);
         handleText(ownRef);
       }
