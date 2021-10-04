@@ -23,6 +23,7 @@ const mainUpdatePeers = (
       const obj = objects.current[x];
       if (obj) {
         objectsNew[x] = {
+          username: obj.username,
           score: obj.score,
           startPosition: obj.elref ? obj.elref.position.toArray() : [0, 0, 1],
           startQuaternion: obj.elref
@@ -163,6 +164,7 @@ const Game = ({ refreshUser, history, user }) => {
       />
       <AppContext.Provider
         value={{
+          username: user.username,
           refreshUser,
           quit,
           history,

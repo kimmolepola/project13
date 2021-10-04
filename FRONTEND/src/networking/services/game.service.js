@@ -28,11 +28,13 @@ export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
   switch (arg.type) {
     case 'chatMessage': {
       data = {
+        username: arg.username,
         userId: arg.id,
         type: arg.type,
         chatMessage: arg.chatMessage,
         chatMessageId: arg.chatMessageId,
       };
+      // if main is sending its own chat message, not relaying other client's message
       if (arg.main === arg.id && !arg.mainrelay) {
         arg.setChatMessages((x) => [data, ...x]);
         setTimeout(
@@ -132,12 +134,18 @@ export const receiveData = (
         main = x;
         return x;
       });
+      // if message comes from main trust the userId in the message,
+      // otherwise use id given from backend
+      const userId = remoteId === main ? data.userId : remoteId;
       const message = {
         ...data,
-        userId: remoteId === main ? data.userId : remoteId,
+        userId,
+        username: objects.current[userId]
+          ? objects.current[userId].username
+          : null,
       };
       if (main === ownId) {
-        message.mainrelay = true;
+        message.mainrelay = true; // main is relaying other client's message
         message.id = message.userId;
         let channels;
         let relay;

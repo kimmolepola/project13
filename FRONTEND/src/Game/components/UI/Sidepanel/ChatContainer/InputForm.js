@@ -25,7 +25,8 @@ const Container = styled.div``;
 
 export default function ChatInputForm() {
   const [inputValue, setInputValue] = useState('');
-  const { main, setChatMessages, id, channels, relay } = useContext(appContext);
+  const { username, main, setChatMessages, id, channels, relay } =
+    useContext(appContext);
 
   return (
     <Container>
@@ -34,6 +35,7 @@ export default function ChatInputForm() {
           e.preventDefault();
           sendDataOnOrderedChannelsAndRelay(
             {
+              username,
               main,
               id,
               setChatMessages,

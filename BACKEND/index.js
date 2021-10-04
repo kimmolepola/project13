@@ -73,7 +73,6 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   const { token } = socket.handshake.auth;
-  console.log('token:', token);
   const id = token
     ? JWT.verify(socket.handshake.auth.token, JWTSecret).id
     : null;
@@ -87,7 +86,7 @@ io.on('connection', (socket) => {
         : 'token error, socket disconnect',
     );
   } else {
-    console.log('connected:', id, 'main:', getMain());
+    console.log('connected:', id);
     socket.emit('init', id);
 
     if (!getMain()) {

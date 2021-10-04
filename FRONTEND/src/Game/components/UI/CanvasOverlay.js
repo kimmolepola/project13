@@ -4,7 +4,21 @@ import theme from '../../../theme';
 import appContext from '../../../context/appContext';
 import { handlePressed, handleReleased } from '../../controls';
 
+const Connecting = styled.div`
+  position: absolute;
+  top: max(calc(50% - 75px), 0px);
+  right: max(calc(50% - 150px), 0px);
+  bottom: max(calc(50% - 75px), 0px);
+  left: max(calc(50% - 150px), 0px);
+  background: ${theme.colors.elementBackgrounds.verylight};
+  display: ${(props) => (props.show ? 'flex' : 'none')};
+  justify-content: center;
+  align-items: center;
+  transition: transform 3s;
+`;
+
 const Infotext = styled.div`
+  display: ${(props) => (props.show ? '' : 'none')};
   padding: 5px;
   background: rgba(255, 255, 255, 0.75);
   white-space: pre-line;
@@ -60,7 +74,7 @@ const Container = styled.div`
 `;
 
 const CanvasOverlay = () => {
-  const { windowHeight, id, objects, text } = useContext(appContext);
+  const { ids, windowHeight, id, objects, text } = useContext(appContext);
 
   const ControlButton = ({ control }) => (
     <Button
@@ -84,7 +98,8 @@ const CanvasOverlay = () => {
 
   return (
     <Container windowHeight={windowHeight}>
-      <Infotext ref={text} />
+      <Connecting show={!ids.length}>Connecting...</Connecting>
+      <Infotext show={ids.length} ref={text} />
       <Controls>
         <ControlButton control="left" />
         <ControlButton control="right" />

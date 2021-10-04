@@ -26,7 +26,7 @@ const connect = ({
     if (main && main === ownId) {
       if (!objectIds.current.includes(newId)) {
         // here fetch object info from database and create object
-        let obj = { score: 0 };
+        let obj = { username: newId, score: 0 };
         let err = null;
         if (!newId.includes('guest_')) {
           const { data, error } = await getGameObject(newId);
@@ -37,6 +37,7 @@ const connect = ({
           objectIds.current.push(newId);
           const obsCur = objects.current;
           obsCur[newId] = {
+            username: obj.username,
             score: obj.score,
             startPosition: [0, 0, 1],
             startQuaternion: [0, 0, 0, 1],

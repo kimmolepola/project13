@@ -17,6 +17,7 @@ const getGameObject = async (token, id) => {
   const user = await User.findOne({ _id: id });
 
   const data = {
+    username: user.username,
     score: user.score,
   };
   return data;

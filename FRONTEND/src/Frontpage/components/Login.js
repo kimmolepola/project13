@@ -117,7 +117,6 @@ const Login = ({ user, setUser, history }) => {
 
   const handleGuestClick = async () => {
     const { data, error } = await guestLogin();
-    console.log('guest login:', data, error);
     if (!error) {
       setUser(data);
     }
