@@ -15,7 +15,7 @@ Open another or multiple browser windows and login by clicking<br/>
 "Sign in as a guest"<br/>
 and click PLAY to join the game
 
-Please keep the browser windows visible in order for the game to update
+Please keep all the browser windows visible in order for the game to update
 
 ## Technologies
 React, Node.js, MongoDB, WebRTC, Socket.io, React-three-fiber, styled-components
