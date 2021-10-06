@@ -139,7 +139,6 @@ const Login = ({ user, setUser, history }) => {
         <ErrorMessage error={validation.password}>
           {validation.password}
         </ErrorMessage>
-
         <Input
           type="password"
           error={validation.password}
@@ -170,6 +169,12 @@ const Login = ({ user, setUser, history }) => {
       >
         Sign in as a guest
       </ClickableText>
+      <div style={{ marginTop: '1cm', maxWidth: '5cm' }}>
+        for demo use please use <br />
+        username: demo <br />
+        password: demo
+        <br />
+      </div>
     </Container>
   );
 };
