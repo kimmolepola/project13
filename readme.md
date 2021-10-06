@@ -1,14 +1,27 @@
-https://project13-app.herokuapp.com
-
 # Project13
 
 Work in progress
+
+## How to use
+
+Click the link https://project13-app.herokuapp.com to start the app
+
+For demo purposes login with
+username: demo
+password: demo
+and click PLAY to start the game
+
+Open another or multiple browser windows and login by clicking
+"Sign in as a guest"
+and click PLAY to join the game
+
+Please keep the browser windows visible in order for the game to update
 
 ## Technologies
 React, Node.js, MongoDB, WebRTC, Socket.io, React-three-fiber, styled-components
 
 ## Design
-Project13 is a browser real-time multiplayer game. It uses WebRTC DataChannel to transfer data between players (peers), and Socket.io as a backup where WebRTC connection can not be established.
+Project13 is a browser real-time networked multiplayer game. It uses WebRTC DataChannel to transfer data between players (peers), and Socket.io as a backup where WebRTC connection can not be established.
 
 One of the peers acts as a game server and other peers connect to this main peer. The main peer holds an authoritative state of the game and sends it regularly to all the other peers. The other peers only send key-down information to the main peer.
 
