@@ -6,13 +6,13 @@ Work in progress
 
 Click the link https://project13-app.herokuapp.com to start the app
 
-For demo purposes login with
-username: demo
-password: demo
+For demo purposes login with<br/>
+username: demo<br/>
+password: demo<br/>
 and click PLAY to start the game
 
-Open another or multiple browser windows and login by clicking
-"Sign in as a guest"
+Open another or multiple browser windows and login by clicking<br/>
+"Sign in as a guest"<br/>
 and click PLAY to join the game
 
 Please keep the browser windows visible in order for the game to update
