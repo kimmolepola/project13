@@ -41,9 +41,9 @@ const connect = ({
             score: obj.score,
             startPosition: [0, 0, 1],
             startQuaternion: [0, 0, 0, 1],
-            controls: { left: 0, right: 0 },
-            controlsOverChannels: { left: 0, right: 0 },
-            controlsOverRelay: { left: 0, right: 0 },
+            controls: { up: 0, down: 0, left: 0, right: 0 },
+            controlsOverChannels: { up: 0, down: 0, left: 0, right: 0 },
+            controlsOverRelay: { up: 0, down: 0, left: 0, right: 0 },
             speed: 0.3,
             rotationSpeed: 1,
             backendPosition: { x: 0, y: 0, z: 1 },
@@ -246,10 +246,15 @@ const connect = ({
     console.log('peer', remoteId, 'disconnect');
     if (main && main === ownId) {
       saveGameState(
-        objectIds.current.map((x) => ({
-          playerId: objects.current[x].id,
-          score: objects.current[x].score,
-        })),
+        objectIds.current.reduce((acc, cur) => {
+          if (!cur.includes('guest_')) {
+            acc.push({
+              playerId: cur,
+              score: objects.current[cur].score,
+            });
+          }
+          return acc;
+        }, []),
       );
     }
     handleDeleteId(remoteId);

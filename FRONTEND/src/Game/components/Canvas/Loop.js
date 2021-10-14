@@ -34,6 +34,16 @@ const Loop = ({
   const handleSelf = (delta) => {
     for (let ii = ownObj.keyDowns.length - 1; ii > -1; ii -= 1) {
       switch (ownObj.keyDowns[ii]) {
+        case 'up':
+          ownObj.controls.up += delta;
+          ownObj.controlsOverChannels.up += delta;
+          ownObj.controlsOverRelay.up += delta;
+          break;
+        case 'down':
+          ownObj.controls.down += delta;
+          ownObj.controlsOverChannels.down += delta;
+          ownObj.controlsOverRelay.down += delta;
+          break;
         case 'left':
           ownObj.controls.left += delta;
           ownObj.controlsOverChannels.left += delta;
@@ -74,9 +84,144 @@ const Loop = ({
         if (o && o.elref) {
           Object.keys(o.controls).forEach((x) => {
             if (o.controls[x] > 0) {
+              const force = delta > 1 ? o.controls[x] : delta * o.controls[x];
+              switch (x) {
+                case 'left':
+                  o.elref.rotateZ(o.rotationSpeed * force);
+                  break;
+                case 'right':
+                  o.elref.rotateZ(-1 * o.rotationSpeed * force);
+                  break;
+                default:
+                  break;
+              }
+              o.controls[x] -= force;
+            }
+          });
+          o.elref.translateY(o.speed * delta);
+          if (main !== id) {
+            o.elref.position.lerp(o.backendPosition, interpolationAlpha);
+            o.elref.quaternion.slerp(
+              qua.fromArray(o.backendQuaternion),
+              interpolationAlpha,
+            );
+          }
+        }
+      }
+    }
+  };
+
+  const gatherUpdateData = (viaRelay) => {
+    const data = { type: 'update', update: {} };
+    objectIds.current.forEach((oid) => {
+      const o =
+        objects.current[oid] && objects.current[oid].elref
+          ? objects.current[oid]
+          : undefined;
+      if (o) {
+        data.update[oid] = {
+          controlsOverNetwork: viaRelay
+            ? o.controlsOverRelay
+            : o.controlsOverChannels,
+          position: o.elref.position,
+          quaternion: o.elref.quaternion.toArray(),
+          speed: o.speed,
+          rotationSpeed: o.rotationSpeed,
+        };
+        if (viaRelay) {
+          o.controlsOverRelay = { up: 0, down: 0, left: 0, right: 0 }; // reset
+        } else {
+          o.controlsOverChannels = { up: 0, down: 0, left: 0, right: 0 }; // reset
+        }
+      }
+    });
+    return data;
+  };
+
+  const gatherControlsData = (viaRelay) => {
+    const controlsData = {
+      type: 'controlsOverNetwork',
+      controlsOverNetwork: {
+        up: viaRelay
+          ? ownObj.controlsOverRelay.up
+          : ownObj.controlsOverChannels.up,
+        down: viaRelay
+          ? ownObj.controlsOverRelay.down
+          : ownObj.controlsOverChannels.down,
+        left: viaRelay
+          ? ownObj.controlsOverRelay.left
+          : ownObj.controlsOverChannels.left,
+        right: viaRelay
+          ? ownObj.controlsOverRelay.right
+          : ownObj.controlsOverChannels.right,
+      },
+    };
+    if (viaRelay) {
+      ownObj.controlsOverRelay.up = 0; // reset
+      ownObj.controlsOverRelay.down = 0; // reset
+      ownObj.controlsOverRelay.left = 0; // reset
+      ownObj.controlsOverRelay.right = 0; // reset
+    } else {
+      ownObj.controlsOverChannels.up = 0; // reset
+      ownObj.controlsOverChannels.down = 0; // reset
+      ownObj.controlsOverChannels.left = 0; // reset
+      ownObj.controlsOverChannels.right = 0; // reset
+    }
+    return controlsData;
+  };
+
+  useFrame((state, delta) => {
+    if (ownObj) {
+      // temporary mock solution to change player score
+      if (Date.now() > nextScoreTime) {
+        objectIds.current.forEach((x) => {
+          if (objects.current[x]) {
+            objects.current[x].score += 1;
+          }
+        });
+        score.current.textContent = `Score: ${ownObj.score}`;
+        nextScoreTime += 3700;
+      }
+      if (Date.now() > nextSendTime && ownObj) {
+        nextSendTime =
+          Date.now() + (main && main === id ? sendIntervalMain : sendInterval);
+        if (main && main === id) {
+          sendDataOnUnorderedChannels(gatherUpdateData(false), channels);
+        } else {
+          sendDataOnUnorderedChannels(gatherControlsData(false), channels);
+        }
+      }
+      if (Date.now() > nextSendTimeRelay && ownObj) {
+        nextSendTimeRelay =
+          Date.now() +
+          (main && main === id ? relaySendIntervalMain : relaySendInterval);
+        if (main && main === id) {
+          sendDataOnRelay(gatherUpdateData(true), relay);
+        } else {
+          sendDataOnRelay(gatherControlsData(true), relay);
+        }
+      }
+
+      const ownRef = ownObj ? ownObj.elref : undefined;
+
+      if (ownRef && ownRef.position) {
+        handleSelf(delta);
+        handleCamera(state, ownRef);
+        handleText(ownRef);
+      }
+      handleObjects(delta);
+    }
+  });
+  return <></>;
+};
+export default Loop;
+
+/* old
+   Object.keys(o.controls).forEach((x) => {
+            if (o.controls[x] > 0) {
               const division = o.controls[x] / delta;
               if (division >= 1) {
-                // while pressing key, if delta on user has been same or more than delta here
+                // if user keypress has lasted longer than delta
                 switch (x) {
                   case 'left':
                     o.elref.rotateZ(o.rotationSpeed * delta * o.controls[x]);
@@ -110,109 +255,4 @@ const Loop = ({
               }
             }
           });
-          o.elref.translateY(o.speed * delta);
-          if (main !== id) {
-            o.elref.position.lerp(o.backendPosition, interpolationAlpha);
-            o.elref.quaternion.slerp(
-              qua.fromArray(o.backendQuaternion),
-              interpolationAlpha,
-            );
-          }
-        }
-      }
-    }
-  };
-
-  const getUpdateData = (viaRelay) => {
-    const data = { type: 'update', update: {} };
-    objectIds.current.forEach((oid) => {
-      const o =
-        objects.current[oid] && objects.current[oid].elref
-          ? objects.current[oid]
-          : undefined;
-      if (o) {
-        data.update[oid] = {
-          controlsOverNetwork: viaRelay
-            ? o.controlsOverRelay
-            : o.controlsOverChannels,
-          position: o.elref.position,
-          quaternion: o.elref.quaternion.toArray(),
-          speed: o.speed,
-          rotationSpeed: o.rotationSpeed,
-        };
-        if (viaRelay) {
-          o.controlsOverRelay = { left: 0, right: 0 }; // reset
-        } else {
-          o.controlsOverChannels = { left: 0, right: 0 }; // reset
-        }
-      }
-    });
-    return data;
-  };
-
-  const getControlsData = (viaRelay) => {
-    const controlsData = {
-      type: 'controlsOverNetwork',
-      controlsOverNetwork: {
-        left: viaRelay
-          ? ownObj.controlsOverRelay.left
-          : ownObj.controlsOverChannels.left,
-        right: viaRelay
-          ? ownObj.controlsOverRelay.right
-          : ownObj.controlsOverChannels.right,
-      },
-    };
-    if (viaRelay) {
-      ownObj.controlsOverRelay.left = 0; // reset
-      ownObj.controlsOverRelay.right = 0; // reset
-    } else {
-      ownObj.controlsOverChannels.left = 0; // reset
-      ownObj.controlsOverChannels.right = 0; // reset
-    }
-    return controlsData;
-  };
-
-  useFrame((state, delta) => {
-    if (ownObj) {
-      if (Date.now() > nextScoreTime) {
-        objectIds.current.forEach((x) => {
-          if (objects.current[x]) {
-            objects.current[x].score += 1;
-          }
-        });
-        score.current.textContent = `Score: ${ownObj.score}`;
-        nextScoreTime += 3700;
-      }
-      if (Date.now() > nextSendTime && ownObj) {
-        nextSendTime =
-          Date.now() + (main && main === id ? sendIntervalMain : sendInterval);
-        if (main && main === id) {
-          sendDataOnUnorderedChannels(getUpdateData(false), channels);
-        } else {
-          sendDataOnUnorderedChannels(getControlsData(false), channels);
-        }
-      }
-      if (Date.now() > nextSendTimeRelay && ownObj) {
-        nextSendTimeRelay =
-          Date.now() +
-          (main && main === id ? relaySendIntervalMain : relaySendInterval);
-        if (main && main === id) {
-          sendDataOnRelay(getUpdateData(true), relay);
-        } else {
-          sendDataOnRelay(getControlsData(true), relay);
-        }
-      }
-
-      const ownRef = ownObj ? ownObj.elref : undefined;
-
-      if (ownRef && ownRef.position) {
-        handleSelf(delta);
-        handleCamera(state, ownRef);
-        handleText(ownRef);
-      }
-      handleObjects(delta);
-    }
-  });
-  return <></>;
-};
-export default Loop;
+*/

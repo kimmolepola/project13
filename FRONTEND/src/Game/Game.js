@@ -72,10 +72,15 @@ const Game = ({ refreshUser, history, user }) => {
   const saveState = async () => {
     if (main && main === id && !id.includes('guest')) {
       const { error, data } = await saveGameState(
-        objectIds.current.map((x) => ({
-          playerId: x,
-          score: objects.current[x].score,
-        })),
+        objectIds.current.reduce((acc, cur) => {
+          if (!cur.includes('guest_')) {
+            acc.push({
+              playerId: cur,
+              score: objects.current[cur].score,
+            });
+          }
+          return acc;
+        }, []),
       );
       if (error) {
         console.error(error);

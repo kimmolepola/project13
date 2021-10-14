@@ -1,11 +1,24 @@
 import { chatMessageTimeToLiveSeconds } from '../../Game/parameters';
 
+const logError = (error, data) => {
+  if (
+    error.message ===
+    "Failed to execute 'send' on 'RTCDataChannel': RTCDataChannel.readyState is not 'open'"
+  ) {
+    console.log(
+      'Failed to send on data channel. This is expected if player disconnected.',
+    );
+  } else {
+    console.error('Error:', error.message, 'Data:', data);
+  }
+};
+
 export const sendDataOnRelay = (data, relay) => {
   if (relay) {
     try {
       relay.emit('data', data);
     } catch (error) {
-      console.log('Error:', error.message, 'Data:', data);
+      logError(error, data);
     }
   }
 };
@@ -17,7 +30,7 @@ export const sendDataOnUnorderedChannels = (data, channels) => {
       try {
         x.send(stringData);
       } catch (error) {
-        console.log('Error:', error.message, 'Data:', stringData);
+        logError(error, data);
       }
     });
   }
@@ -55,14 +68,14 @@ export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
       try {
         x.send(dataString);
       } catch (error) {
-        console.log('Error:', error.message, 'Data:', dataString);
+        logError(error, data);
       }
     });
   }
   try {
     if (relay) relay.emit('data', data);
   } catch (error) {
-    console.log('Error:', error.message, 'Data:', data);
+    logError(error, data);
   }
 };
 
