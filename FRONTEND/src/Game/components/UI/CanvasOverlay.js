@@ -27,7 +27,7 @@ const Infotext = styled.div`
   top: 20px;
 `;
 
-const Controls = styled.div`
+const ControlsContainer = styled.div`
   flex: 1;
   display: flex;
   justify-content: center;
@@ -35,6 +35,18 @@ const Controls = styled.div`
   @media (min-width: ${theme.mobileWidth}px) {
     display: none;
   }
+`;
+
+const Controls = styled.div`
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 const Button = styled.button`
@@ -47,7 +59,7 @@ const Button = styled.button`
   justify-content: center;
   font-size: 22px;
   border-radius: 50%;
-  margin: 7mm;
+  margin: 2mm 7mm 4mm 7mm;
   width: 1cm;
   height: 1cm;
   background: transparent;
@@ -85,10 +97,14 @@ const CanvasOverlay = () => {
     >
       {(() => {
         switch (control) {
+          case 'up':
+            return '\u2191';
+          case 'down':
+            return '\u2193';
           case 'left':
-            return '\u2039';
+            return '\u2190';
           case 'right':
-            return '\u203A';
+            return '\u2192';
           default:
             return null;
         }
@@ -100,10 +116,16 @@ const CanvasOverlay = () => {
     <Container windowHeight={windowHeight}>
       <Connecting show={!ids.length}>Connecting...</Connecting>
       <Infotext show={ids.length} ref={text} />
-      <Controls>
-        <ControlButton control="left" />
-        <ControlButton control="right" />
-      </Controls>
+      <ControlsContainer>
+        <Controls>
+          <ControlButton control="left" />
+          <ButtonGroup>
+            <ControlButton control="up" />
+            <ControlButton control="down" />
+          </ButtonGroup>
+          <ControlButton control="right" />
+        </Controls>
+      </ControlsContainer>
     </Container>
   );
 };

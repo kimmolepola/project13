@@ -64,7 +64,7 @@ const Loop = ({
     state.camera.position.x = ownRef.position.x;
     state.camera.position.y = ownRef.position.y;
     state.camera.rotation.z = ownRef.rotation.z;
-    state.camera.translateY(3);
+    state.camera.translateY(2);
   };
 
   const handleText = (ownRef) => {
@@ -86,6 +86,14 @@ const Loop = ({
             if (o.controls[x] > 0) {
               const force = delta > 1 ? o.controls[x] : delta * o.controls[x];
               switch (x) {
+                case 'up':
+                  o.speed += force;
+                  if (o.speed > 10) o.speed = 10;
+                  break;
+                case 'down':
+                  o.speed -= force;
+                  if (o.speed < 0.5) o.speed = 0.5;
+                  break;
                 case 'left':
                   o.elref.rotateZ(o.rotationSpeed * force);
                   break;
