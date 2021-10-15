@@ -31,4 +31,4 @@ The architecture comprises Frontend, Backend, Relay server, and a Database. Play
 
 If WebRTC connection is established, the regular game state messages and the key-down information will be transferred unordered using UDP as a transport substrate. If WebRTC connection can not be established, the messages are transferred in-order using TCP as a transport substrate, and via relay server.
 
-Currently the game doesn't yet have many game-like features. The players can turn left and right, accelerate and decelerate , see each other if they are at the same area, and chat with each other. A player's score counts up steadily while playing. After quitting the game the score is saved into database (excluding guest players). More features are to follow.
+Currently the game doesn't yet have many game-like features. The players can turn left and right, accelerate and decelerate, see each other if they are at the same area, and chat with each other. A player's score counts up steadily while playing. After quitting the game the score is saved into database (excluding guest players). More features are to follow.
