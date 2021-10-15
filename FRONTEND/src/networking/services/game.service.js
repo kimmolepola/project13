@@ -98,6 +98,8 @@ export const receiveData = (
         const objectBackend = data.update[objectIds.current[i]];
         if (objectLocal && objectBackend) {
           if (objectIds.current[i] !== ownId) {
+            objectLocal.controls.up += objectBackend.controlsOverNetwork.up;
+            objectLocal.controls.down += objectBackend.controlsOverNetwork.down;
             objectLocal.controls.left += objectBackend.controlsOverNetwork.left;
             objectLocal.controls.right +=
               objectBackend.controlsOverNetwork.right;
@@ -112,12 +114,17 @@ export const receiveData = (
     case 'controlsOverNetwork': // only main will receive these
       if (objects.current[remoteId]) {
         /* eslint-disable no-param-reassign */
-        const { left } = data.controlsOverNetwork;
-        const { right } = data.controlsOverNetwork;
+        const { up, down, left, right } = data.controlsOverNetwork;
+        objects.current[remoteId].controlsOverRelay.up += up;
+        objects.current[remoteId].controlsOverRelay.down += down;
         objects.current[remoteId].controlsOverRelay.left += left;
         objects.current[remoteId].controlsOverRelay.right += right;
+        objects.current[remoteId].controlsOverChannels.up += up;
+        objects.current[remoteId].controlsOverChannels.down += down;
         objects.current[remoteId].controlsOverChannels.left += left;
         objects.current[remoteId].controlsOverChannels.right += right;
+        objects.current[remoteId].controls.up += up;
+        objects.current[remoteId].controls.down += down;
         objects.current[remoteId].controls.left += left;
         objects.current[remoteId].controls.right += right;
         /* eslint-enable */

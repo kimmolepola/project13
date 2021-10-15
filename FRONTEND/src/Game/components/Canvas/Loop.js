@@ -92,7 +92,7 @@ const Loop = ({
                   break;
                 case 'down':
                   o.speed -= force;
-                  if (o.speed < 0.5) o.speed = 0.5;
+                  if (o.speed < 0.3) o.speed = 0.3;
                   break;
                 case 'left':
                   o.elref.rotateZ(o.rotationSpeed * force);
@@ -119,6 +119,7 @@ const Loop = ({
     }
   };
 
+  // only main will do this
   const gatherUpdateData = (viaRelay) => {
     const data = { type: 'update', update: {} };
     objectIds.current.forEach((oid) => {
@@ -146,6 +147,7 @@ const Loop = ({
     return data;
   };
 
+  // only non-main will do this
   const gatherControlsData = (viaRelay) => {
     const controlsData = {
       type: 'controlsOverNetwork',
