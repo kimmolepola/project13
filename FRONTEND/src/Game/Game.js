@@ -54,6 +54,11 @@ const cleanup = (idsNew, objects) => {
 };
 
 const Game = ({ refreshUser, history, user }) => {
+  if (!user) {
+    history.push('/');
+    return <div />;
+  }
+
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
