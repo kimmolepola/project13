@@ -21,7 +21,7 @@ Please keep all the browser windows visible in order for the game to update
 React, Node.js, MongoDB, WebRTC, Socket.io, React-three-fiber, styled-components
 
 ## Design
-Project13 is a browser real-time networked multiplayer game. It uses WebRTC DataChannel to transfer data between players (peers), and Socket.io as a backup where WebRTC connection can not be established.
+Project13 is a browser real-time networked multiplayer game. It uses WebRTC DataChannel to transfer data between players (peers), and Socket.io as a backup where WebRTC connection can not be established. Players can be on the same or on different networks and they will be connected with each other.
 
 One of the peers acts as a game server and other peers connect to this main peer. The main peer holds an authoritative state of the game and sends it regularly to all the other peers. The other peers only send key-down information to the main peer.
 
