@@ -1,5 +1,7 @@
 import { chatMessageTimeToLiveSeconds } from '../../Game/parameters';
 
+let doStuffTime = Date.now();
+
 const logError = (error, data) => {
   if (
     error.message ===
@@ -13,20 +15,20 @@ const logError = (error, data) => {
   }
 };
 
-export const sendDataOnRelay = (data, relay) => {
-  if (relay) {
+export const sendDataOnRelay = (data, connection) => {
+  if (connection.getRelay()) {
     try {
-      relay.emit('data', data);
+      connection.getRelay().emit('data', data);
     } catch (error) {
       logError(error, data);
     }
   }
 };
 
-export const sendDataOnUnorderedChannels = (data, channels) => {
-  if (channels.unordered.length) {
+export const sendDataOnUnorderedChannels = (data, connection) => {
+  if (connection.getChannels().unordered.length) {
     const stringData = JSON.stringify(data);
-    channels.unordered.forEach((x) => {
+    connection.getChannels().unordered.forEach((x) => {
       try {
         x.send(stringData);
       } catch (error) {
@@ -36,7 +38,7 @@ export const sendDataOnUnorderedChannels = (data, channels) => {
   }
 };
 
-export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
+export const sendDataOnOrderedChannelsAndRelay = (arg, connection) => {
   let data;
   switch (arg.type) {
     case 'chatMessage': {
@@ -61,10 +63,10 @@ export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
       data = arg;
       break;
   }
-  if (channels.ordered.length) {
+  if (connection.getChannels().ordered.length) {
     const dataString = JSON.stringify(data);
 
-    channels.ordered.forEach((x) => {
+    connection.getChannels().ordered.forEach((x) => {
       try {
         x.send(dataString);
       } catch (error) {
@@ -72,7 +74,10 @@ export const sendDataOnOrderedChannelsAndRelay = (arg, channels, relay) => {
       }
     });
   }
+  console.log('ordered data:', data);
   try {
+    const relay = connection.getRelay();
+    console.log('relay: ', relay);
     if (relay) relay.emit('data', data);
   } catch (error) {
     logError(error, data);
@@ -87,12 +92,15 @@ export const receiveData = (
   objects,
   setIds,
   ownId,
-  setChannels,
-  setRelay,
+  connection,
   setMain,
 ) => {
   switch (data.type) {
     case 'update': // only non-main will receive these
+      if (Date.now() > doStuffTime) {
+        console.log('updatedata:', data);
+        doStuffTime = Date.now() + 30000;
+      }
       for (let i = objectIds.current.length - 1; i > -1; i -= 1) {
         const objectLocal = objects.current[objectIds.current[i]];
         const objectBackend = data.update[objectIds.current[i]];
@@ -167,17 +175,7 @@ export const receiveData = (
       if (main === ownId) {
         message.mainrelay = true; // main is relaying other client's message
         message.id = message.userId;
-        let channels;
-        let relay;
-        setChannels((x) => {
-          channels = x;
-          return x;
-        });
-        setRelay((x) => {
-          relay = x;
-          return x;
-        });
-        sendDataOnOrderedChannelsAndRelay(message, channels, relay);
+        sendDataOnOrderedChannelsAndRelay(message, connection);
       }
       setChatMessages((x) => [message, ...x]);
       setTimeout(

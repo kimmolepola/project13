@@ -14,13 +14,31 @@ const connect = ({
   setId,
   setChatMessages,
   setMain,
-  setChannels,
-  setSignaler,
-  setRelay,
-  setRemotes,
 }) => {
   let ownId;
   let main;
+  let remotes = {};
+  const channels = { ordered: [], unordered: [] };
+  let relay;
+  let signaler;
+
+  const getChannels = () => channels;
+  const getRelay = () => relay;
+  const setRelay = (x) => {
+    relay = x;
+  };
+  const getSignaler = () => signaler;
+
+  const disconnect = () => {
+    Object.keys(remotes).forEach((x) => {
+      if (remotes[x].pc) remotes[x].pc.close();
+    });
+    if (relay) relay.disconnect();
+    if (signaler) signaler.disconnect();
+    remotes = {};
+    relay = undefined;
+    signaler = undefined;
+  };
 
   const mainHandleNewId = async (newId) => {
     if (main && main === ownId) {
@@ -74,7 +92,7 @@ const connect = ({
     setIds((x) => x.filter((xx) => xx !== delId));
   };
 
-  const socket = io(
+  signaler = io(
     process.env.NODE_ENV === 'production'
       ? `wss://${process.env.REACT_APP_BACKEND}`
       : `ws://${process.env.REACT_APP_BACKEND}`,
@@ -84,17 +102,16 @@ const connect = ({
       },
     },
   );
-  setSignaler(socket);
 
-  socket.on('connect_error', (err) => {
+  signaler.on('connect_error', (err) => {
     console.error(err);
   });
 
-  socket.on('connect', () => {
+  signaler.on('connect', () => {
     setConnectionMessage('signaling socket connected');
     console.log('signaling socket connected');
   });
-  socket.on('disconnect', () => {
+  signaler.on('disconnect', () => {
     setConnectionMessage('signaling socket disconnected');
     console.log('signaling socket disconnected');
   });
@@ -105,6 +122,7 @@ const connect = ({
     setupRelayConnection({
       mainHandleNewId,
       setRelay,
+      getRelay,
       setIds,
       ownId,
       main,
@@ -112,11 +130,10 @@ const connect = ({
       setChatMessages,
       objectIds,
       objects,
-      setChannels,
       setMain,
-      setRemotes,
       remoteId,
     });
+    remotes[remoteId] = { ...remotes[remoteId], relaySocket: true };
   };
 
   const start = (remoteId) => {
@@ -140,13 +157,13 @@ const connect = ({
     };
 
     pc.onicecandidate = ({ candidate }) => {
-      socket.emit('signaling', { remoteId, candidate });
+      getSignaler().emit('signaling', { remoteId, candidate });
     };
 
     pc.onnegotiationneeded = async () => {
       try {
         await pc.setLocalDescription();
-        socket.emit('signaling', {
+        getSignaler().emit('signaling', {
           remoteId,
           description: pc.localDescription,
         });
@@ -167,17 +184,13 @@ const connect = ({
     });
 
     channelUnordered.onclose = () => {
-      setChannels((x) => ({
-        ordered: x.ordered,
-        unordered: x.unordered.filter((xx) => xx !== channelUnordered),
-      }));
+      getChannels().unordered = getChannels().unordered.filter(
+        (xx) => xx !== channelUnordered,
+      );
     };
 
     channelUnordered.onopen = () => {
-      setChannels((x) => ({
-        ordered: x.ordered,
-        unordered: [...x.unordered, channelUnordered],
-      }));
+      getChannels().unordered.push(channelUnordered);
     };
 
     channelUnordered.onmessage = ({ data }) => {
@@ -189,24 +202,19 @@ const connect = ({
         objects,
         setIds,
         ownId,
-        setChannels,
-        setRelay,
+        { getRelay, getChannels },
         setMain,
       );
     };
 
     channelOrdered.onclose = () => {
-      setChannels((x) => ({
-        ordered: x.ordered.filter((xx) => xx !== channelOrdered),
-        unordered: x.unordered,
-      }));
+      getChannels().ordered = getChannels().ordered.filter(
+        (xx) => xx !== channelOrdered,
+      );
     };
 
     channelOrdered.onopen = () => {
-      setChannels((x) => ({
-        ordered: [...x.ordered, channelOrdered],
-        unordered: x.unordered,
-      }));
+      getChannels().ordered.push(channelOrdered);
     };
 
     channelOrdered.onmessage = ({ data }) => {
@@ -218,30 +226,20 @@ const connect = ({
         objects,
         setIds,
         ownId,
-        setChannels,
-        setRelay,
+        { getRelay, getChannels },
         setMain,
       );
     };
-
-    let newRemotes;
-    setRemotes((x) => {
-      newRemotes = {
-        ...x,
-        [remoteId]: { pc, channelUnordered, channelOrdered },
-      };
-      return newRemotes;
-    });
-    return newRemotes;
+    remotes[remoteId] = { pc, channelUnordered, channelOrdered };
   };
 
-  socket.on('nomain', () => {
+  signaler.on('nomain', () => {
     setConnectionMessage(
       'game host disconnected, no other available hosts found, please try again later',
     );
   });
 
-  socket.on('peerDisconnect', (remoteId) => {
+  signaler.on('peerDisconnect', (remoteId) => {
     setConnectionMessage(`peer ${remoteId} disconnect`);
     console.log('peer', remoteId, 'disconnect');
     if (main && main === ownId) {
@@ -258,62 +256,40 @@ const connect = ({
       );
     }
     handleDeleteId(remoteId);
-    let remotes;
-    setRemotes((x) => {
-      remotes = x;
-      return x;
-    });
     if (remotes[remoteId]) remotes[remoteId].pc.close();
-    const newRemotes = { ...remotes };
-    delete newRemotes[remoteId];
-    setRemotes(newRemotes);
-    let relay;
-    setRelay((x) => {
-      relay = x;
-      return x;
-    });
-    if (relay && !Object.keys(newRemotes).find((xx) => xx.relaySocket)) {
+    delete remotes[remoteId];
+    if (relay && !Object.keys(remotes).find((xx) => xx.relaySocket)) {
       relay.disconnect();
-      setRelay(undefined);
+      relay = undefined;
     }
   });
 
-  socket.on('connectToMain', (remoteId) => {
+  signaler.on('connectToMain', (remoteId) => {
     setMain(remoteId);
     start(remoteId);
   });
 
-  socket.on('main', (arg) => {
+  signaler.on('main', (arg) => {
     main = arg;
     setMain(arg);
-    let relay;
-    setRelay((x) => {
-      relay = x;
-      return x;
-    });
     if (relay) relay.emit('main', true);
     mainHandleNewId(main);
     console.log('you are main');
   });
 
-  socket.on('fail', (reason) => {
+  signaler.on('fail', (reason) => {
     console.log('signaling socket fail, reason:', reason);
   });
 
-  socket.on('init', (clientId) => {
+  signaler.on('init', (clientId) => {
     ownId = clientId;
     setId(clientId);
     console.log('own id:', clientId);
   });
 
-  socket.on('signaling', async ({ id: remoteId, description, candidate }) => {
-    let remotes;
-    setRemotes((x) => {
-      remotes = x;
-      return x;
-    });
+  signaler.on('signaling', async ({ id: remoteId, description, candidate }) => {
     if (!remotes[remoteId]) {
-      remotes = start(remoteId);
+      start(remoteId);
     }
     const { pc } = remotes[remoteId];
     try {
@@ -321,7 +297,7 @@ const connect = ({
         await pc.setRemoteDescription(description);
         if (description.type === 'offer') {
           await pc.setLocalDescription();
-          socket.emit('signaling', {
+          signaler.emit('signaling', {
             remoteId,
             description: pc.localDescription,
           });
@@ -333,6 +309,7 @@ const connect = ({
       console.error(err);
     }
   });
+  return { disconnect, getRelay, setRelay, getSignaler, getChannels };
 };
 
 export default connect;

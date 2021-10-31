@@ -25,7 +25,7 @@ const Container = styled.div``;
 
 export default function ChatInputForm() {
   const [inputValue, setInputValue] = useState('');
-  const { username, main, setChatMessages, id, channels, relay } =
+  const { connection, username, main, setChatMessages, id } =
     useContext(appContext);
 
   return (
@@ -43,8 +43,7 @@ export default function ChatInputForm() {
               chatMessage: inputValue,
               type: 'chatMessage',
             },
-            channels,
-            relay,
+            connection,
           );
           setInputValue('');
         }}

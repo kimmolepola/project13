@@ -8,15 +8,7 @@ import { sendDataOnOrderedChannelsAndRelay } from '../networking/services/game.s
 import { saveGameState } from '../networking/services/gameObject.service';
 import UI from './components/UI';
 
-const mainUpdatePeers = (
-  idsNew,
-  main,
-  id,
-  objectIds,
-  objects,
-  channels,
-  relay,
-) => {
+const mainUpdatePeers = (idsNew, main, id, objectIds, objects, connection) => {
   if (main && main === id) {
     const objectsNew = {};
     objectIds.current.forEach((x) => {
@@ -41,7 +33,7 @@ const mainUpdatePeers = (
       }
     });
     const arg = { type: 'updateObjects', ids: idsNew, objects: objectsNew };
-    sendDataOnOrderedChannelsAndRelay(arg, channels, relay);
+    sendDataOnOrderedChannelsAndRelay(arg, connection);
   }
 };
 const cleanup = (idsNew, objects) => {
@@ -62,10 +54,6 @@ const Game = ({ refreshUser, history, user }) => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
-  const [channels, setChannels] = useState({ ordered: [], unordered: [] });
-  const [signaler, setSignaler] = useState();
-  const [relay, setRelay] = useState();
-  const [remotes, setRemotes] = useState({});
   const [chatMessages, setChatMessages] = useState([]);
   const [id, setId] = useState();
   const [ids, setIds] = useState([]);
@@ -73,6 +61,9 @@ const Game = ({ refreshUser, history, user }) => {
   const objectIds = useRef([]);
   const text = useRef();
   const score = useRef({ value: 0, textContent: 0 });
+  const [connection, setConnection] = useState();
+
+  console.log('ids:', ids);
 
   const saveState = async () => {
     if (main && main === id && !id.includes('guest')) {
@@ -94,22 +85,13 @@ const Game = ({ refreshUser, history, user }) => {
     return true;
   };
 
-  const disconnect = () => {
-    Object.keys(remotes).forEach((x) => {
-      if (remotes[x].pc) remotes[x].pc.close();
-    });
-    setRemotes({});
-    if (relay) relay.disconnect();
-    setRelay(undefined);
-    if (signaler) signaler.disconnect();
-    setSignaler(undefined);
-  };
-
   const quit = async () => {
     if (main && main === id) {
       await saveState();
     }
-    disconnect();
+    if (connection) {
+      connection.disconnect();
+    }
   };
 
   const resizeHandler = () => {
@@ -122,8 +104,8 @@ const Game = ({ refreshUser, history, user }) => {
 
   useEffect(() => {
     cleanup(ids, objects);
-    mainUpdatePeers(ids, main, id, objectIds, objects, channels, relay);
-  }, [ids, channels, relay]);
+    mainUpdatePeers(ids, main, id, objectIds, objects, connection);
+  }, [ids]);
 
   useEffect(() => {
     let unsubscribe;
@@ -139,20 +121,18 @@ const Game = ({ refreshUser, history, user }) => {
   }, [id]);
 
   useEffect(() => {
-    connect({
-      objects,
-      objectIds,
-      user,
-      setConnectionMessage,
-      setIds,
-      setId,
-      setChatMessages,
-      setMain,
-      setChannels,
-      setSignaler,
-      setRelay,
-      setRemotes,
-    });
+    setConnection(
+      connect({
+        objects,
+        objectIds,
+        user,
+        setConnectionMessage,
+        setIds,
+        setId,
+        setChatMessages,
+        setMain,
+      }),
+    );
     return () => {
       quit();
     };
@@ -161,11 +141,10 @@ const Game = ({ refreshUser, history, user }) => {
   return (
     <>
       <Canvas
+        connection={connection}
         score={score}
         windowHeight={windowHeight}
         ids={ids}
-        relay={relay}
-        channels={channels}
         main={main}
         id={id}
         objectIds={objectIds}
@@ -174,6 +153,7 @@ const Game = ({ refreshUser, history, user }) => {
       />
       <AppContext.Provider
         value={{
+          connection,
           username: user.username,
           refreshUser,
           quit,
@@ -186,10 +166,7 @@ const Game = ({ refreshUser, history, user }) => {
           connectionMessage,
           setChatMessages,
           chatMessages,
-          channels,
-          relay,
           id,
-          remotes,
           text,
         }}
       >

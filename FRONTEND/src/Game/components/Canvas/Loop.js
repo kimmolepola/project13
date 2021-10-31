@@ -14,16 +14,7 @@ import {
   sendDataOnRelay,
 } from '../../../networking/services/game.service';
 
-const Loop = ({
-  score,
-  relay,
-  channels,
-  main,
-  text,
-  id,
-  objectIds,
-  objects,
-}) => {
+const Loop = ({ connection, score, main, text, id, objectIds, objects }) => {
   /* eslint-disable no-param-reassign */
   const ownObj = objects.current[id];
   const qua = new Quaternion();
@@ -196,9 +187,9 @@ const Loop = ({
         nextSendTime =
           Date.now() + (main && main === id ? sendIntervalMain : sendInterval);
         if (main && main === id) {
-          sendDataOnUnorderedChannels(gatherUpdateData(false), channels);
+          sendDataOnUnorderedChannels(gatherUpdateData(false), connection);
         } else {
-          sendDataOnUnorderedChannels(gatherControlsData(false), channels);
+          sendDataOnUnorderedChannels(gatherControlsData(false), connection);
         }
       }
       if (Date.now() > nextSendTimeRelay && ownObj) {
@@ -206,9 +197,9 @@ const Loop = ({
           Date.now() +
           (main && main === id ? relaySendIntervalMain : relaySendInterval);
         if (main && main === id) {
-          sendDataOnRelay(gatherUpdateData(true), relay);
+          sendDataOnRelay(gatherUpdateData(true), connection);
         } else {
-          sendDataOnRelay(gatherControlsData(true), relay);
+          sendDataOnRelay(gatherControlsData(true), connection);
         }
       }
 

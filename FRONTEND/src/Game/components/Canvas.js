@@ -21,11 +21,10 @@ const Container = styled.div`
 `;
 
 const CanvasContainer = ({
+  connection,
   score,
   windowHeight,
   ids,
-  relay,
-  channels,
   main,
   id,
   objectIds,
@@ -43,9 +42,8 @@ const CanvasContainer = ({
     >
       <color attach="background" args={['bisque']} />
       <Loop
+        connection={connection}
         score={score}
-        relay={relay}
-        channels={channels}
         main={main}
         text={text}
         id={id}
