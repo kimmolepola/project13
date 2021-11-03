@@ -15,7 +15,7 @@ const client =
 /* eslint-disable no-underscore-dangle, no-return-assign, no-param-reassign */
 const guestLogin = async () => {
   console.log('guest login');
-  const id = `guest_${Math.random().toString()}`;
+  const id = `guest_${Math.random().toString().substring(2)}`.substring(0, 10);
   const token = JWT.sign({ id }, JWTSecret);
 
   return {

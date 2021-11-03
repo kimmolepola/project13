@@ -25,6 +25,8 @@ const Infotext = styled.div`
   position: absolute;
   left: 20px;
   top: 20px;
+  font-family: ${theme.fontFamily};
+  font-size: 12px;
 `;
 
 const ControlsContainer = styled.div`
@@ -88,23 +90,31 @@ const Container = styled.div`
 const ObjectInfo = styled.div`
   position: absolute;
   transform: translate(-50%, -50%);
+  transition: all 0.02s;
+  font-family: ${theme.fontFamily};
+  font-size: 11px;
 `;
 
-const ObjectInfos = ({ objects }) => {
+const ObjectInfos = ({ id, objects }) => {
   console.log('objectInfos');
   return (
     <>
-      {Object.keys(objects.current).map((x) => (
-        <ObjectInfo
-          key={x}
-          ref={(ref) => {
-            if (objects.current[x]) {
-              const obj = objects.current[x];
-              obj.objectInfoRef = ref;
-            }
-          }}
-        />
-      ))}
+      {Object.keys(objects.current).reduce((acc, cur) => {
+        if (cur !== id) {
+          acc.push(
+            <ObjectInfo
+              key={cur}
+              ref={(ref) => {
+                if (objects.current[cur]) {
+                  const obj = objects.current[cur];
+                  obj.objectInfoRef = ref;
+                }
+              }}
+            />,
+          );
+        }
+        return acc;
+      }, [])}
     </>
   );
 };
@@ -138,7 +148,7 @@ const CanvasOverlay = () => {
 
   return (
     <Container windowHeight={windowHeight}>
-      <ObjectInfos objects={objects} />
+      <ObjectInfos id={id} objects={objects} />
       <Connecting show={!ids.length}>Connecting...</Connecting>
       <Infotext show={ids.length} ref={text} />
       <ControlsContainer>

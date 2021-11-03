@@ -17,30 +17,7 @@ import {
 
 /* eslint-disable no-param-reassign */
 
-let doStuffTime = Date.now();
-
-const handleObjectInfoTexts = (objects, camera, size) => {
-  if (Date.now() > doStuffTime) {
-    doStuffTime = Date.now() + 2000;
-    const h = size.height / 2;
-    const w = size.width / 2;
-    Object.keys(objects.current).forEach((x) => {
-      if (objects.current[x].objectInfoRef && objects.current[x].elref) {
-        objects.current[x].objectInfoRef.textContent = x;
-
-        const v = new THREE.Vector3();
-        v.copy(objects.current[x].elref.position);
-        v.project(camera);
-
-        const height = h * v.y + h;
-        const width = w * v.x + w;
-
-        objects.current[x].objectInfoRef.style.top = `${h * -v.y + h}px`;
-        objects.current[x].objectInfoRef.style.left = `${w * v.x + w}px`;
-      }
-    });
-  }
-};
+const doStuffTime = Date.now();
 
 // only non-main will do this
 const gatherControlsData = (ownObj, viaRelay) => {
@@ -103,10 +80,22 @@ const gatherUpdateData = (objectIds, objects, viaRelay) => {
   return data;
 };
 
-const handleObjects = (qua, id, main, objects, objectIds, delta) => {
+const handleObjects = (
+  camera,
+  v,
+  h,
+  w,
+  qua,
+  ownId,
+  main,
+  objects,
+  objectIds,
+  delta,
+) => {
   for (let i = objectIds.current.length - 1; i > -1; i -= 1) {
-    if (objects.current[objectIds.current[i]]) {
-      const o = objects.current[objectIds.current[i]];
+    const id = objectIds.current[i];
+    if (objects.current[id]) {
+      const o = objects.current[id];
       if (o && o.elref) {
         Object.keys(o.controls).forEach((x) => {
           if (o.controls[x] > 0) {
@@ -133,12 +122,20 @@ const handleObjects = (qua, id, main, objects, objectIds, delta) => {
           }
         });
         o.elref.translateY(o.speed * delta);
-        if (main !== id) {
+        if (main !== ownId) {
           o.elref.position.lerp(o.backendPosition, interpolationAlpha);
           o.elref.quaternion.slerp(
             qua.fromArray(o.backendQuaternion),
             interpolationAlpha,
           );
+        }
+
+        if (o.objectInfoRef) {
+          o.objectInfoRef.textContent = o.username;
+          v.copy(o.elref.position);
+          v.project(camera);
+          o.objectInfoRef.style.top = `calc(${h * -v.y + h}px + 10%)`;
+          o.objectInfoRef.style.left = `${w * v.x + w}px`;
         }
       }
     }
@@ -199,6 +196,9 @@ const Loop = ({ connection, score, main, text, id, objectIds, objects }) => {
   let nextScoreTime = Date.now();
 
   const { size, camera } = useThree();
+  const v = new THREE.Vector3();
+  const h = size.height / 2;
+  const w = size.width / 2;
 
   useFrame((state, delta) => {
     if (ownObj) {
@@ -246,10 +246,10 @@ const Loop = ({ connection, score, main, text, id, objectIds, objects }) => {
       if (ownRef && ownRef.position) {
         handleSelf(ownObj, delta);
         handleCamera(state, ownRef);
-        handleObjectInfoTexts(objects, camera, size);
+        // handleObjectInfoTexts(objects, camera, size);
         handleOwnInfoText(text, ownObj, ownRef);
       }
-      handleObjects(qua, id, main, objects, objectIds, delta);
+      handleObjects(camera, v, h, w, qua, id, main, objects, objectIds, delta);
     }
   });
   return <></>;
