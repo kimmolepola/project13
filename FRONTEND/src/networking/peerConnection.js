@@ -215,6 +215,9 @@ const connect = ({
 
     channelOrdered.onopen = () => {
       getChannels().ordered.push(channelOrdered);
+      if (main === ownId) {
+        setIds((x) => [...x]); // trigger mainUpdatePeers
+      }
     };
 
     channelOrdered.onmessage = ({ data }) => {

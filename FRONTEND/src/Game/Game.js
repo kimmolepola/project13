@@ -51,6 +51,7 @@ const Game = ({ refreshUser, history, user }) => {
     return <div />;
   }
 
+  const [connection, setConnection] = useState();
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [connectionMessage, setConnectionMessage] = useState();
   const [main, setMain] = useState();
@@ -61,7 +62,6 @@ const Game = ({ refreshUser, history, user }) => {
   const objectIds = useRef([]);
   const text = useRef();
   const score = useRef({ value: 0, textContent: 0 });
-  const [connection, setConnection] = useState();
 
   console.log('ids:', ids);
 

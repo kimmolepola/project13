@@ -39,6 +39,8 @@ export const sendDataOnUnorderedChannels = (data, connection) => {
 };
 
 export const sendDataOnOrderedChannelsAndRelay = (arg, connection) => {
+  console.log('sendOrderedAndRelay-data:', arg);
+  console.log('channels-length:', connection.getChannels().ordered.length);
   let data;
   switch (arg.type) {
     case 'chatMessage': {
@@ -99,6 +101,7 @@ export const receiveData = (
     case 'update': // only non-main will receive these
       if (Date.now() > doStuffTime) {
         console.log('updatedata:', data);
+        console.log('objects:', objects);
         doStuffTime = Date.now() + 30000;
       }
       for (let i = objectIds.current.length - 1; i > -1; i -= 1) {
@@ -139,6 +142,7 @@ export const receiveData = (
       }
       break;
     case 'updateObjects': {
+      console.log('updateObjects-data:', data);
       // only non-main will receive these
       objectIds.current.splice(0, objectIds.current.length);
       objectIds.current.push(...data.ids);

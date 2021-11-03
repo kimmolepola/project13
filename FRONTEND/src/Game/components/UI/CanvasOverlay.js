@@ -85,6 +85,30 @@ const Container = styled.div`
   display: flex;
 `;
 
+const ObjectInfo = styled.div`
+  position: absolute;
+  transform: translate(-50%, -50%);
+`;
+
+const ObjectInfos = ({ objects }) => {
+  console.log('objectInfos');
+  return (
+    <>
+      {Object.keys(objects.current).map((x) => (
+        <ObjectInfo
+          key={x}
+          ref={(ref) => {
+            if (objects.current[x]) {
+              const obj = objects.current[x];
+              obj.objectInfoRef = ref;
+            }
+          }}
+        />
+      ))}
+    </>
+  );
+};
+
 const CanvasOverlay = () => {
   const { ids, windowHeight, id, objects, text } = useContext(appContext);
 
@@ -114,6 +138,7 @@ const CanvasOverlay = () => {
 
   return (
     <Container windowHeight={windowHeight}>
+      <ObjectInfos objects={objects} />
       <Connecting show={!ids.length}>Connecting...</Connecting>
       <Infotext show={ids.length} ref={text} />
       <ControlsContainer>

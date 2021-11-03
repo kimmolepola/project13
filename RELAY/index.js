@@ -20,6 +20,8 @@ io.on('connection', (socket) => {
   let id;
   if (main && main !== socket) {
     main.emit('newPeer');
+  } else {
+    console.log('no main');
   }
   console.log('connected:', socket.id);
   socket.on('clientId', (clientId) => {
